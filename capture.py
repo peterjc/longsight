@@ -22,8 +22,10 @@ def get_resolution(video_capture):
 def set_resolution(video_capture, width, height):
     video_capture.set(cv.CV_CAP_PROP_FRAME_WIDTH, width)
     video_capture.set(cv.CV_CAP_PROP_FRAME_HEIGHT, height)
-    assert (width, height) == get_resolution(video_capture), \
-        "Failed to set resoution to %i x %i" % (width, height)
+    w, h = get_resolution(video_capture)
+    assert (width, height) == (w, h), \
+        "Failed to set resoution to %i x %i, got %i x %i" \
+        % (width, height, w, h)
     return width, height
 
 def debug(video_capture):
@@ -44,7 +46,7 @@ def debug(video_capture):
 
 
 vidcap = cv2.VideoCapture()
-assert vidcap.open(0)
+assert vidcap.open(1)
 retval, image = vidcap.retrieve()
 assert retval, retval
 assert image is not None, image
@@ -59,6 +61,14 @@ retval, image = vidcap.retrieve()
 assert retval, retval
 assert image is not None, image
 assert cv2.imwrite("test_%ix%i.png" % (w, h), image)
+debug(vidcap)
+
+print "Trying to change gain..."
+vidcap.set(cv.CV_CAP_PROP_GAIN, 0)
+retval, image = vidcap.retrieve()
+assert retval, retval
+assert image is not None, image
+assert cv2.imwrite("test_%ix%i_gain.png" % (w, h), image)
 debug(vidcap)
 
 vidcap.release()
