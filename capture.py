@@ -9,12 +9,36 @@ Linux and Windows as well.
 """
 import sys
 import time
+import itertools
+from optparse import OptionParser
 try:
     import cv #TODO - Where do the property constants live in cv2?
     import cv2
 except ImportError:
     sys.stderr.write("Please install OpenCV and the cv and cv2 Python interfaces\n")
     sys.exit(1)
+
+parser = OptionParser(add_help_option=False, usage="""Capture series for webcam frames.
+
+Example usage to capture 10 frames at 1280x960 and name them 'New Moon XXX.png', use:
+-n 10 -w 1280 -h 960 -m "New Moon "
+""")
+parser.add_option("-?", "--help",
+                  action="help",
+                  help="Show help")
+parser.add_option("-m", "--name",
+                  help="Filename prefix")
+parser.add_option("-n", "--number", type="int",
+                  help="Number of frames (default is infinite)")
+parser.add_option("-h", "--height", type="int",
+                  help="Resolution height in pixels")
+parser.add_option("-w", "--width", type="int",
+                  help="Resolution width in pixels")
+parser.add_option("-d", "--device", type="int", default=0,
+                  help="Which camera device?")
+parser.add_option("-v", "--verbose", action="store_true",
+                  help="Verbose output (debug)")
+(options, args) = parser.parse_args()
 
 def get_resolution(video_capture):
     return video_capture.get(cv.CV_CAP_PROP_FRAME_WIDTH), \
@@ -45,47 +69,44 @@ def debug(video_capture):
         else:
             print " - %s = %r" % (name, value)
 
-
-def capture_batch(video_capture, frames, name):
-    start = time.time()
-    for frame in xrange(frames):
-        retval, image = vidcap.read()
-        assert retval, retval
-        assert image is not None, image
-        assert cv2.imwrite(name % frame, image)
-    print "%i frames, approx %0.1f fps" \
-          % (frames, frames / (time.time()-start))
+#TODO - Date stamp to avoid over-writting
+#template = "%04i%02i%02i-%02i:%02i:%02.2f"
+template = "%05i"
+if options.name:
+    template = options.name.replace("%","%%") + template
+template += ".png"
 
 vidcap = cv2.VideoCapture()
-assert vidcap.open(1)
-retval, image = vidcap.retrieve()
-assert retval, retval
-assert image is not None, image
+assert vidcap.open(options.device)
+if options.verbose:
+    debug(vidcap)
+
+if options.width and options.height:
+    set_resolution(vidcap, options.width, options.height)
+elif options.width or options.height:
+    sys.stderr("Must supply height AND width (or neither)\n")
+    sys.exit(1)
 w, h = get_resolution(vidcap)
-assert w, h == image.size
-assert cv2.imwrite("test_%ix%i.png" % (w, h), image)
-debug(vidcap)
-#Seeing about 7fps at default 1280x960 resolution of
-#Xbox Live Vision camera
-capture_batch(vidcap, 50, "test_%ix%i_f%%03i.png" % (w,h))
 
-print "Trying to change resolution..."
-w, h = set_resolution(vidcap, 640, 480)
-retval, image = vidcap.retrieve()
-assert retval, retval
-assert image is not None, image
-assert cv2.imwrite("test_%ix%i.png" % (w, h), image)
-debug(vidcap)
-#Seeing about 15fps at 640x480 resolution for Xbox Live Vision
-capture_batch(vidcap, 100, "test_%ix%i_f%%03i.png" % (w,h))
-
-print "Trying to change gain..."
-vidcap.set(cv.CV_CAP_PROP_GAIN, 0)
-retval, image = vidcap.retrieve()
-assert retval, retval
-assert image is not None, image
-assert cv2.imwrite("test_%ix%i_gain.png" % (w, h), image)
-debug(vidcap)
-
+if options.number:
+    frames = xrange(options.number)
+else:
+    frames = itertools.count()
+if options.verbose:
+    print "Starting..."
+start = time.time()
+for f in frames:
+    retval, image = vidcap.read()
+    filename = template % f
+    assert retval, retval
+    assert image is not None, image
+    assert w, h == image.size
+    assert cv2.imwrite(filename, image)
+    if options.verbose:
+        print "%s - frame %i" % (filename, f)
+print "Approx %0.1ffps" % (float(f) / (time.time()-start))
+if options.verbose:
+    print "Done"
+    debug(vidcap)
 vidcap.release()
-print "Done"
+sys.exit(0)
