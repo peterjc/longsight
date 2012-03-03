@@ -29,7 +29,9 @@ parser.add_option("-?", "--help",
 parser.add_option("-m", "--name",
                   help="Filename prefix")
 parser.add_option("-n", "--number", type="int",
-                  help="Number of frames (default is infinite)")
+                  help="Number of frames (default is infinite, -1 means live)")
+parser.add_option("-p", "--pause", type="float",
+                  help="Pause in seconds between frames (default is none)")
 parser.add_option("-f", "--frame", action="store_true",
                   help="Name files with frame number suffix (default is time-stamp)")
 parser.add_option("-h", "--height", type="int",
@@ -72,7 +74,10 @@ def debug(video_capture):
             print " - %s = %r" % (name, value)
 
 
-if options.frame:
+if options.number < 0:
+    template = "LIVE.png"
+    print "Will write to LIVE file only"
+elif options.frame:
     template = "%05i.png"
 else:
     template = "%s.png" #time-stamp
@@ -91,7 +96,7 @@ elif options.width or options.height:
     sys.exit(1)
 w, h = get_resolution(vidcap)
 
-if options.number:
+if options.number > 0:
     frames = xrange(options.number)
 else:
     frames = itertools.count()
@@ -100,7 +105,9 @@ if options.verbose:
 start = time.time()
 for f in frames:
     retval, image = vidcap.read()
-    if options.frame:
+    if options.number < 0:
+        filename = template #LIVE, i.e. replace in situ
+    elif options.frame:
         filename = template % f
     else:
         now_sec = time.time()
@@ -115,6 +122,8 @@ for f in frames:
     assert cv2.imwrite(filename, image)
     if options.verbose:
         print "%s - frame %i" % (filename, f)
+    if options.pause > 0:
+        time.sleep(options.pause)
 print "Approx %0.1ffps" % (float(f) / (time.time()-start))
 if options.verbose:
     print "Done"
