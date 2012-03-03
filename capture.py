@@ -20,8 +20,8 @@ except ImportError:
 
 parser = OptionParser(add_help_option=False, usage="""Capture series for webcam frames.
 
-Example usage to capture 10 frames at 1280x960 and name them 'New Moon XXX.png', use:
--n 10 -w 1280 -h 960 -m "New Moon "
+For example, for 10 frames at 1280x960 named 'New Moon--DATE--TIME.png', use:
+-n 10 -w 1280 -h 960 -m "New Moon"
 """)
 parser.add_option("-?", "--help",
                   action="help",
@@ -30,6 +30,8 @@ parser.add_option("-m", "--name",
                   help="Filename prefix")
 parser.add_option("-n", "--number", type="int",
                   help="Number of frames (default is infinite)")
+parser.add_option("-f", "--frame", action="store_true",
+                  help="Name files with frame number suffix (default is time-stamp)")
 parser.add_option("-h", "--height", type="int",
                   help="Resolution height in pixels")
 parser.add_option("-w", "--width", type="int",
@@ -69,12 +71,13 @@ def debug(video_capture):
         else:
             print " - %s = %r" % (name, value)
 
-#TODO - Date stamp to avoid over-writting
-#template = "%04i%02i%02i-%02i:%02i:%02.2f"
-template = "%05i"
+
+if options.frame:
+    template = "%05i.png"
+else:
+    template = "%s.png" #time-stamp
 if options.name:
-    template = options.name.replace("%","%%") + template
-template += ".png"
+    template = options.name.replace("%","%%") + "--" + template
 
 vidcap = cv2.VideoCapture()
 assert vidcap.open(options.device)
@@ -97,7 +100,15 @@ if options.verbose:
 start = time.time()
 for f in frames:
     retval, image = vidcap.read()
-    filename = template % f
+    if options.frame:
+        filename = template % f
+    else:
+        now_sec = time.time()
+        now = time.gmtime(now_sec)
+        now_str = "%04i-%02i-%02i--%02i-%02i-%02i" % now[:6]
+        #Want sub-second accuracy...
+        now_str += ".%02i" % int(100*(now_sec - int(now_sec)))
+        filename = template % now_str
     assert retval, retval
     assert image is not None, image
     assert w, h == image.size
