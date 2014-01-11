@@ -24,8 +24,7 @@ Save Log File: Off (default)
 With this, the "Connect/Disconnect" button works fine, once connected
 the scope queries the position using the :GR# and :GD# commands.
 
-The "Goto" button is disabled (since I configured this as a Push-To
-telecope).
+The "Goto" button is disabled (when configured as a Push-To telecope).
 
 The "Align" button gives an are you sure prompt with the currently
 selected objects name (e.g. a star), and then sends its position
@@ -33,6 +32,10 @@ using the Sr and Sd commands, followed by the :CM# command.
 
 The "Lock/Unlock" button appears to work, I need to start returning
 a non-static position to test this.
+
+If configured as a Goto telescope, additional left/right and up/down
+buttons appear on screen (which send East/West, North/South movement
+commands. Also, a slew rate slider control appears.
 
 """
 import socket
@@ -177,6 +180,34 @@ def quit_moving():
     """
     return None
 
+def set_rate_centering():
+    """For the :RC# command, set slew rate to centering (2nd slowest).
+
+    Returns Nothing
+    """
+    return None
+
+def set_rate_guiding():
+    """For the :RG# command, set slew rate to guiding (slowest).
+
+    Returns Nothing
+    """
+    return None
+
+def set_rate_find():
+    """For the :RM# command, set slew rate to find (2nd fastest).
+
+    Returns Nothing
+    """
+    return None
+
+def set_rate_max():
+    """For the :RS# command, set slew rate to maximum (fastest).
+
+    Returns Nothing
+    """
+    return None
+
 
 command_map = {
     "CM": cm_sync,
@@ -192,6 +223,10 @@ command_map = {
     "Qn": quit_north,
     "Qs": quit_south,
     "Qw": quit_west,
+    "RC": set_rate_centering,
+    "RG": set_rate_guiding,
+    "RM": set_rate_find,
+    "RS": set_rate_max,
     "Sd": set_target_de,
     "Sr": set_target_ra,
     "U": precision_toggle,
