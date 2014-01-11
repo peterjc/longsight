@@ -22,6 +22,15 @@ server_port = 4030 #Default port used by SkySafari
 
 high_precision = False
 
+def cm_sync():
+    """For the :CM# command, Synchronizes the telescope's position with the currently selected database object's coordinates.
+
+    Returns:
+    LX200's - a "#" terminated string with the name of the object that was synced.
+    Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
+    """
+    return "M31 EX GAL MAG 3.5 SZ178.0'"
+
 def get_telescope_ra():
     """For the :GR# command, Get Telescope RA
 
@@ -45,6 +54,22 @@ def get_telescope_de():
     else:
         return "+49*54#"
 
+def set_target_ra(value):
+    """For the commands :SrHH:MM.T# or :SrHH:MM:SS#
+
+    Set target object RA to HH:MM.T or HH:MM:SS depending on the current precision setting.
+    Returns: 0 - Invalid, 1 - Valid
+    """
+    return "1"
+
+def set_target_de(value):
+    """For the command :SdsDD*MM#
+
+    Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
+    Returns: 1 - Dec Accepted, 0 - Dec invalid
+    """
+    return "1"
+
 def slew_rate_max():
     """For the :RS# command, Set Slew rate to max (fastest)
 
@@ -66,10 +91,13 @@ def precision_toggle():
 
 
 command_map = {
-    ":GD#": get_telescope_de,
-    ":GR#": get_telescope_ra,
-    ":RS#": slew_rate_max,
-    ":U#": precision_toggle,
+    "CM": cm_sync,
+    "GD": get_telescope_de,
+    "GR": get_telescope_ra,
+    "RS": slew_rate_max,
+    "Sd": set_target_de,
+    "Sr": set_target_ra,
+    "U": precision_toggle,
 }
 
 # Create a TCP/IP socket
@@ -91,11 +119,21 @@ while True:
                 break
             #print >>sys.stderr, 'received "%s"' % data
             #For stacked commands like ":RS#:GD#"
+            if data[0] != ":":
+                sys.stderr.write("Invalid command: %s" % data)
+                data = ""
+                break
             while "#" in data:
-                cmd = data[:data.index("#")+1]
-                data = data[len(cmd):]
+                cmd = data[1:data.index("#")]
+                #print "%r --> %r" % (data, cmd)
+                data = data[1+len(cmd)+1:]
+                cmd, value = cmd[:2], cmd[2:]
                 if cmd in command_map:
-                    resp = command_map[cmd]()
+                    if value:
+                        print "Command %r, argument %r" % (cmd, value)
+                        resp = command_map[cmd](value)
+                    else:
+                        resp = command_map[cmd]()
                     if resp:
                         sys.stdout.write("Command %s, sending %s\n" % (cmd, resp))
                         connection.sendall(resp)
