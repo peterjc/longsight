@@ -9,6 +9,31 @@ The intended goal is that celestial/planetarium software like the
 SkySafari applications can talk to this server as if it was an off
 the shelf Meade LX200 compatible "Go To" telescope, when in fact
 it is a DIY intrumented telescope or simulation.
+
+Testing with Sky Safari Plus v4.0, where the telescope is setup as follows:
+
+Scope Type: Meade LX-200 Classic
+Mount Type: Equatorial Push-To
+Auto-Detect SkyFi: Off
+IP Address: That of the computer running this script (default 10.0.0.1)
+Port Number: 4030
+Set Time & Location: Off (default)
+Readout Rate: 4 per second (default)
+Save Log File: Off (default)
+
+With this, the "Connect/Disconnect" button works fine, once connected
+the scope queries the position using the :GR# and :GD# commands.
+
+The "Goto" button is disabled (since I configured this as a Push-To
+telecope).
+
+The "Align" button gives an are you sure prompt with the currently
+selected objects name (e.g. a star), and then sends its position
+using the Sr and Sd commands, followed by the :CM# command.
+
+The "Lock/Unlock" button appears to work, I need to start returning
+a non-static position to test this.
+
 """
 import socket
 import sys
