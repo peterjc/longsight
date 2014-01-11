@@ -14,7 +14,10 @@ import socket
 import sys
 import commands
 
-server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
+server_name = socket.gethostbyname(socket.gethostname())
+if server_name == "127.0.0.1":
+    #This works on Linux but not on Mac OS X or Windows:
+    server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
 server_port = 4030 #Default port used by SkySafari
 
 def get_telescope_ra():
