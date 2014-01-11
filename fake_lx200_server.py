@@ -222,6 +222,16 @@ def set_rate_max():
     """
     return None
 
+# TODO - Can SkySafari show focus control buttons?
+# Would be very cool to connect my motorised focuser to this...
+#
+# :F+# move in - returns nothing
+# :F-# move out - returns nothing
+# :FQ# halt Focuser Motion - returns: nothing
+# :FF# Set Focus speed to fastest - Returns: Nothing
+# :FS# Set Focus speed to slowest - Returns: Nothing
+# :F<n># set focuser speed to <n> where <n> is 1..4 - Returns: Nothing
+
 
 command_map = {
     "CM": cm_sync,
