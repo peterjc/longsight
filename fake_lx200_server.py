@@ -20,13 +20,19 @@ if server_name == "127.0.0.1":
     server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
 server_port = 4030 #Default port used by SkySafari
 
+high_precision = False
+
 def get_telescope_ra():
     """For the :GR# command, Get Telescope RA
 
     Returns: HH:MM.T# or HH:MM:SS#
     Depending which precision is set for the telescope
     """
-    return "00:00.0#"
+    if high_precision:
+        #TODO - What is the "T" in "HH:MM.T#" for?
+        return "03:25.0#"
+    else:
+        return "03:25.21#"
 
 def get_telescope_de():
     """For the :GD# command, Get Telescope Declination.
@@ -34,7 +40,10 @@ def get_telescope_de():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
-    return "s00*00#"
+    if high_precision:
+        return "+49*54'33#"
+    else:
+        return "+49*54#"
 
 def slew_rate_max():
     """For the :RS# command, Set Slew rate to max (fastest)
@@ -51,6 +60,8 @@ def precision_toggle():
 
     Returns Nothing
     """
+    global high_precision
+    high_precision = not high_precision
     return None
 
 
