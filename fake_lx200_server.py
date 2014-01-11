@@ -57,7 +57,21 @@ def cm_sync():
     LX200's - a "#" terminated string with the name of the object that was synced.
     Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
     """
+    #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
     return "M31 EX GAL MAG 3.5 SZ178.0'"
+
+def move_to_target():
+    """For the :MS# command, Slew to Target Object
+
+    Returns:
+    0 - Slew is Possible
+    1<string># - Object Below Horizon w/string message
+    2<string># - Object Below Higher w/string message
+    """
+    #SkySafari's "goto" command sends this after a pair of :Sr# and :Sd# commands.
+    #For return code 1 and 2 the error message is not shown, simply that the
+    #target is below the horizon (1) or out of reach of the mount (2).
+    return "2Sorry, no goto"
 
 def get_telescope_ra():
     """For the :GR# command, Get Telescope RA
@@ -218,6 +232,7 @@ command_map = {
     "Mn": move_north,
     "Ms": move_south,
     "Mw": move_west,
+    "MS": move_to_target,
     "Q": quit_moving,
     "Qe": quit_east,
     "Qn": quit_north,
