@@ -114,12 +114,84 @@ def precision_toggle():
     high_precision = not high_precision
     return None
 
+def move_north():
+    """For the :Mn# command, start moving North.
+
+    Returns Nothing
+    """
+    return None
+
+def move_east():
+    """For the :Me# command, start moving East.
+
+    Returns Nothing
+    """
+    return None
+
+def move_south():
+    """For the :Ms# command, start moving South.
+
+    Returns Nothing
+    """
+    return None
+
+def move_west():
+    """For the :Mw# command, start moving West.
+
+    Returns Nothing
+    """
+    return None
+
+def quit_north():
+    """For the :Qn# command, abort slew North.
+
+    Returns Nothing
+    """
+    return None
+
+def quit_east():
+    """For the :Qe# command, abort slew East.
+
+    Returns Nothing
+    """
+    return None
+
+def quit_south():
+    """For the :Qs# command, abort slew West.
+
+    Returns Nothing
+    """
+    return None
+
+def quit_west():
+    """For the :Qw# command, abort slew West.
+
+    Returns Nothing
+    """
+    return None
+
+def quit_moving():
+    """For the :Q# command, abort all current slewing.
+
+    Returns Nothing
+    """
+    return None
+
 
 command_map = {
     "CM": cm_sync,
     "GD": get_telescope_de,
     "GR": get_telescope_ra,
     "RS": slew_rate_max,
+    "Me": move_east,
+    "Mn": move_north,
+    "Ms": move_south,
+    "Mw": move_west,
+    "Q": quit_moving,
+    "Qe": quit_east,
+    "Qn": quit_north,
+    "Qs": quit_south,
+    "Qw": quit_west,
     "Sd": set_target_de,
     "Sr": set_target_ra,
     "U": precision_toggle,
@@ -163,7 +235,7 @@ while True:
                         sys.stdout.write("Command %s, sending %s\n" % (cmd, resp))
                         connection.sendall(resp)
                     else:
-                        sys.stdout.write("Command %s, no responce\n" % cmd)
+                        sys.stdout.write("Command %s, no response\n" % cmd)
                 else:
                     sys.stderr.write("Unknown command: %s\n" % cmd)
     finally:
