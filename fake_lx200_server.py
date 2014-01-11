@@ -80,29 +80,28 @@ sock.bind(server_address)
 sock.listen(1)
 
 while True:
-    print >>sys.stderr, 'waiting for a connection'
+    #sys.stdout.write("waiting for a connection\n")
     connection, client_address = sock.accept()
+    data = ""
     try:
-        print >>sys.stderr, 'client connected:', client_address
+        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
-            data = connection.recv(16)
+            data += connection.recv(16)
             if not data:
                 break
-            print >>sys.stderr, 'received "%s"' % data
+            #print >>sys.stderr, 'received "%s"' % data
             #For stacked commands like ":RS#:GD#"
             while "#" in data:
                 cmd = data[:data.index("#")+1]
                 data = data[len(cmd):]
                 if cmd in command_map:
-                    print "Command %s" % cmd
                     resp = command_map[cmd]()
                     if resp:
-                        print >>sys.stderr, "sending %s" % resp
+                        sys.stdout.write("Command %s, sending %s\n" % (cmd, resp))
                         connection.sendall(resp)
+                    else:
+                        sys.stdout.write("Command %s, no responce\n" % cmd)
                 else:
-                    print "Unknown command: %s" % cmd
-            else:
-                #TODO
-                pass
+                    sys.stderr.write("Unknown command: %s\n" % cmd)
     finally:
         connection.close()
