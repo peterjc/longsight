@@ -35,8 +35,11 @@ a non-static position to test this.
 
 If configured as a Goto telescope, additional left/right and up/down
 buttons appear on screen (which send East/West, North/South movement
-commands. Also, a slew rate slider control appears.
+commands.
 
+Also, a slew rate slider control appears. Depending on which model
+telescope was selected, this may give four rates via the RC/RG/RM/RS
+commands, or Sw commands (range 2 to 8).
 """
 import socket
 import sys
@@ -297,6 +300,9 @@ while True:
                     else:
                         sys.stdout.write("Command %s, no response\n" % cmd)
                 else:
-                    sys.stderr.write("Unknown command: %s\n" % cmd)
+                    if value:
+                        sys.stderr.write("Unknown command: %s %s\n" % (cmd, value))
+                    else:
+                        sys.stderr.write("Unknown command: %s\n" % cmd)
     finally:
         connection.close()
