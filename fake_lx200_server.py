@@ -121,13 +121,6 @@ def set_target_de(value):
     """
     return "1"
 
-def slew_rate_max():
-    """For the :RS# command, Set Slew rate to max (fastest)
-
-    Returns: Nothing
-    """
-    return None
-
 def precision_toggle():
     """For the :U# command, Toggle between low/hi precision positions
     
@@ -139,106 +132,6 @@ def precision_toggle():
     global high_precision
     high_precision = not high_precision
     return None
-
-def move_north():
-    """For the :Mn# command, start moving North.
-
-    Returns Nothing
-    """
-    return None
-
-def move_east():
-    """For the :Me# command, start moving East.
-
-    Returns Nothing
-    """
-    return None
-
-def move_south():
-    """For the :Ms# command, start moving South.
-
-    Returns Nothing
-    """
-    return None
-
-def move_west():
-    """For the :Mw# command, start moving West.
-
-    Returns Nothing
-    """
-    return None
-
-def quit_north():
-    """For the :Qn# command, abort slew North.
-
-    Returns Nothing
-    """
-    return None
-
-def quit_east():
-    """For the :Qe# command, abort slew East.
-
-    Returns Nothing
-    """
-    return None
-
-def quit_south():
-    """For the :Qs# command, abort slew West.
-
-    Returns Nothing
-    """
-    return None
-
-def quit_west():
-    """For the :Qw# command, abort slew West.
-
-    Returns Nothing
-    """
-    return None
-
-def quit_moving():
-    """For the :Q# command, abort all current slewing.
-
-    Returns Nothing
-    """
-    return None
-
-def set_rate_centering():
-    """For the :RC# command, set slew rate to centering (2nd slowest).
-
-    Returns Nothing
-    """
-    return None
-
-def set_rate_guiding():
-    """For the :RG# command, set slew rate to guiding (slowest).
-
-    Returns Nothing
-    """
-    return None
-
-def set_rate_find():
-    """For the :RM# command, set slew rate to find (2nd fastest).
-
-    Returns Nothing
-    """
-    return None
-
-def set_rate_max():
-    """For the :RS# command, set slew rate to maximum (fastest).
-
-    Returns Nothing
-    """
-    return None
-
-def set_max_rate(value):
-    """For the :SwN# command, Set maximum slew rate to N degrees per second.
-
-    N is the range (2..8)
-
-    Returns: 0 - Invalid, 1 - Valid
-    """
-    return "1"
 
 def set_site_latitude(value):
     """For the :StsDD*MM# command, Sets the current site latitdue to sDD*MM
@@ -291,6 +184,13 @@ def set_site_calendar(value):
     #making me guess it is expecting something else and times out?
     return "1Updating Planetary Data#%s#" % (" "*30)
 
+def return_one(value=None):
+    """Dummy command implementation returning value 1."""
+    return "1"
+
+def return_none(value=None):
+    """Dummy command implementation returning nothing."""
+    return None
 
 # TODO - Can SkySafari show focus control buttons?
 # Would be very cool to connect my motorised focuser to this...
@@ -307,26 +207,25 @@ command_map = {
     "CM": cm_sync,
     "GD": get_telescope_de,
     "GR": get_telescope_ra,
-    "RS": slew_rate_max,
-    "Me": move_east,
-    "Mn": move_north,
-    "Ms": move_south,
-    "Mw": move_west,
+    "Me": return_none, #start moving East
+    "Mn": return_none, #start moving North
+    "Ms": return_none, #start moving South
+    "Mw": return_none, #start moving West
     "MS": move_to_target,
-    "Q": quit_moving,
-    "Qe": quit_east,
-    "Qn": quit_north,
-    "Qs": quit_south,
-    "Qw": quit_west,
-    "RC": set_rate_centering,
-    "RG": set_rate_guiding,
-    "RM": set_rate_find,
-    "RS": set_rate_max,
+    "Q": return_none, #abort all current slewing
+    "Qe": return_none, #abort slew East
+    "Qn": return_none, #abort slew North
+    "Qs": return_none, #abort slew South
+    "Qw": return_none, #abort slew West
+    "RC": return_none, #set slew rate to centering (2nd slowest)
+    "RG": return_none, #set slew rate to guiding (slowest)
+    "RM": return_none, #set slew rate to find (2nd fastest)
+    "RS": return_none, #set Slew rate to max (fastest)
     "Sd": set_target_de,
     "Sr": set_target_ra,
     "St": set_site_latitude,
     "Sg": set_site_longitude,
-    "Sw": set_max_rate,
+    "Sw": return_one, #set max slew rate
     "SG": set_site_timezone,
     "SL": set_site_localtime,
     "SC": set_site_calendar,
