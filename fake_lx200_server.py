@@ -231,6 +231,15 @@ def set_rate_max():
     """
     return None
 
+def set_max_rate(value):
+    """For the :SwN# command, Set maximum slew rate to N degrees per second.
+
+    N is the range (2..8)
+
+    Returns: 0 - Invalid, 1 - Valid
+    """
+    return "1"
+
 def set_site_latitude(value):
     """For the :StsDD*MM# command, Sets the current site latitdue to sDD*MM
 
@@ -317,6 +326,7 @@ command_map = {
     "Sr": set_target_ra,
     "St": set_site_latitude,
     "Sg": set_site_longitude,
+    "Sw": set_max_rate,
     "SG": set_site_timezone,
     "SL": set_site_localtime,
     "SC": set_site_calendar,
