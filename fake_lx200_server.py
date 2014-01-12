@@ -35,11 +35,14 @@ a non-static position to test this.
 
 If configured as a Goto telescope, additional left/right and up/down
 buttons appear on screen (which send East/West, North/South movement
-commands.
+commands. Also, a slew rate slider control appears. Depending on which
+model telescope was selected, this may give four rates via the
+RC/RG/RM/RS commands, or Sw commands (range 2 to 8).
 
-Also, a slew rate slider control appears. Depending on which model
-telescope was selected, this may give four rates via the RC/RG/RM/RS
-commands, or Sw commands (range 2 to 8).
+If SkySafari's "Set Time & Location" feature is selected, it will
+send commands St and Sg (for the location) then SG, SL, SC to set
+the time and date.
+
 """
 import socket
 import sys
@@ -83,7 +86,8 @@ def get_telescope_ra():
     Depending which precision is set for the telescope
     """
     if high_precision:
-        #TODO - What is the "T" in "HH:MM.T#" for?
+        #The .T is for tenths of a minute, see e.g.
+        #http://www.manualslib.com/manual/295083/Meade-Lx200.html?page=55
         return "03:25.0#"
     else:
         return "03:25.21#"
@@ -225,6 +229,58 @@ def set_rate_max():
     """
     return None
 
+def set_site_latitude(value):
+    """For the :StsDD*MM# command, Sets the current site latitdue to sDD*MM
+
+    Returns: 0 - Invalid, 1 - Valid
+    """
+    return "1"
+
+def set_site_longitude(value):
+    """For the :SgDDD*MM# command, Set current site longitude to DDD*MM
+
+    Returns: 0 - Invalid, 1 - Valid
+    """
+    #Expected immediately after the set latitude command
+    #e.g. :St+56*29# then :Sg003*08'#
+    return "1"
+
+def set_site_timezone(value):
+    """For the :SGsHH.H# command, Set the number of hours added to local time to yield UTC
+
+    Returns: 0 - Invalid, 1 - Valid
+    """
+    #Expected immediately after the set latitude and longitude commands
+    #Seems the decimal is optional, e.g. :SG-00#
+    return "1"
+
+def set_site_localtime(value):
+    """For the :SLHH:MM:SS# command, Set the local Time
+
+    Returns: 0 - Invalid, 1 - Valid
+    """
+    #e.g. :SL00:10:48#
+    return "1"
+
+def set_site_calendar(value):
+    """For the :SCMM/DD/YY# command, Change Handbox Date to MM/DD/YY
+
+    Returns: <D><string>
+
+    D = '0' if the date is invalid. The string is the null string.
+    D = '1' for valid dates and the string is
+    'Updating Planetary Data#                              #',
+
+    Note: For LX200GPS/RCX400/Autostar II this is the UTC data!
+    """
+    #Exact list of values from http://www.dv-fansler.com/FTP%20Files/Astronomy/LX200%20Hand%20Controller%20Communications.pdf
+    #return "1Updating        planetary data. #%s#" % (" "*32)
+    #
+    #This seems to work but SkySafari takes a while to finish,
+    #making me guess it is expecting something else and times out?
+    return "1Updating Planetary Data#%s#" % (" "*30)
+
+
 # TODO - Can SkySafari show focus control buttons?
 # Would be very cool to connect my motorised focuser to this...
 #
@@ -257,6 +313,11 @@ command_map = {
     "RS": set_rate_max,
     "Sd": set_target_de,
     "Sr": set_target_ra,
+    "St": set_site_latitude,
+    "Sg": set_site_longitude,
+    "SG": set_site_timezone,
+    "SL": set_site_localtime,
+    "SC": set_site_calendar,
     "U": precision_toggle,
 }
 
