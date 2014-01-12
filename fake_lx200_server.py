@@ -41,7 +41,9 @@ RC/RG/RM/RS commands, or Sw commands (range 2 to 8).
 
 If SkySafari's "Set Time & Location" feature is selected, it will
 send commands St and Sg (for the location) then SG, SL, SC to set
-the time and date.
+the time and date. If using "Meade LX-200 Classic" this imposes
+a 15s delay, using a newer model like the "Meade LX-200 GPS" there
+is no noticeable delay on connection.
 
 """
 import socket
