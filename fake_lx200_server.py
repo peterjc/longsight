@@ -58,6 +58,7 @@ import sys
 import commands
 import time
 import datetime
+from math import pi, sin, cos, asin, acos, modf
 
 #TODO - Try astropy if I can get it to compile on Mac OS X...
 from astropysics import coords
@@ -80,6 +81,10 @@ local_site = obstools.Site(coords.AngularCoordinate("+51d28m38s"),
 #client (which should match any location set by the client).
 local_time_offset = 0
 
+#These will come from sensor information...
+local_alt = 85 * pi / 180.0
+local_az = 30 * pi / 180.0
+
 def site_time_gmt_as_epoch():
     global local_time_offset
     return time.time() + local_time_offset
@@ -100,6 +105,23 @@ def debug_time():
         sys.stderr.write("Effective site date/time is %s (local/GMT/UTC)\n"
                          % site_time_gmt_as_datetime())
 
+def greenwich_sidereal_time_in_radians():
+    """Calculate using GMT (according to client's time settings)."""
+    #Function astropysics.obstools.epoch_to_jd wants a decimal year as input
+    #Function astropysics.obstools.calendar_to_jd can take a datetime object
+    gmt_jd = obstools.calendar_to_jd(site_time_gmt_as_datetime())
+    #Convert from hours to radians... 24hr = 2*pi
+    return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
+
+def alt_az_to_equatorial(alt, az):
+    global local_site #and time offset used too
+    lat = local_site.latitude.r
+    dec  = asin(sin(alt)*sin(lat) + cos(alt)*cos(lat)*cos(az))
+    hours_in_rad = acos((sin(alt) - sin(lat)*sin(dec)) / (cos(lat)*cos(dec)))
+    if sin(az) > 0.0:
+        hours_in_rad = 2*pi - hours_in_rad
+    ra = greenwich_sidereal_time_in_radians() - local_site.longitude.r - hours_in_rad
+    return ra, dec
 
 def cm_sync():
     """For the :CM# command, Synchronizes the telescope's position with the currently selected database object's coordinates.
@@ -124,18 +146,61 @@ def move_to_target():
     #target is below the horizon (1) or out of reach of the mount (2).
     return "2Sorry, no goto"
 
+def radians_to_hms(angle):
+    fraction, hours = modf(angle)
+    fraction, minutes = modf(fraction * 60)
+    return hours, minutes, fraction * 60
+
+def radians_to_hhmmss(angle):
+    while angle < 0.0:
+        sys.stderr.write("Warning, radians_to_hhmmss called with %0.2f\n" % angle)
+        angle += 2*pi
+    assert angle >= 0.0
+    return "%02i:%02i:%02i#" % radians_to_hms(angle)
+
+def radians_to_hhmmt(angle):
+    while angle < 0.0:
+        sys.stderr.write("Warning, radians_to_hhmmt called with %0.2f\n" % angle)
+        angle += 2*pi
+    h, m, s = radians_to_hms(angle)
+    return "%02i:%02i:%01i#" % (h, m, s / 60.0)
+
+def radians_to_sddmm(angle):
+    """Signed degrees, arc-minutes as sDD*MM# for protocol."""
+    if angle < 0.0:
+        sign = "-"
+        angle = abs(angle)
+    else:
+        sign = "+"
+    fraction, degrees = modf(angle * 180 / pi)
+    return "%s%03i*%02i#" % (sign, degrees, fraction * 60.0)
+
+def radians_to_sddmmss(angle):
+    """Signed degrees, arc-minutes, arc-seconds as sDD*MM'SS# for protocol."""
+    if angle < 0.0:
+        sign = "-"
+        angle = abs(angle)
+    else:
+        sign = "+"
+    fraction, degrees = modf(angle * 180 / pi)
+    fraction, arcminutes = modf(fraction * 60.0)
+    return "%s%02i*%02i'%02i#" % (sign, degrees, arcminutes, fraction * 60.0)
+
+
 def get_telescope_ra():
     """For the :GR# command, Get Telescope RA
 
     Returns: HH:MM.T# or HH:MM:SS#
     Depending which precision is set for the telescope
     """
+    #TODO - Since :GR# and :GD# commands normally in pairs, cache this?
+    ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if high_precision:
-        return "03:25:21#"
+        return radians_to_hhmmss(ra)
     else:
         #The .T is for tenths of a minute, see e.g.
         #http://www.manualslib.com/manual/295083/Meade-Lx200.html?page=55
-        return "03:25.0#"
+        return radians_to_hhmmt(ra)
 
 def get_telescope_de():
     """For the :GD# command, Get Telescope Declination.
@@ -143,10 +208,12 @@ def get_telescope_de():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
+    ra,dec = alt_az_to_equatorial(local_alt, local_az)
+    print ra, dec
     if high_precision:
-        return "+49*54'33#"
+        return radians_to_sddmmss(dec)
     else:
-        return "+49*54#"
+        return radians_to_sddmm(dec)
 
 def set_target_ra(value):
     """For the commands :SrHH:MM.T# or :SrHH:MM:SS#
