@@ -70,7 +70,8 @@ if server_name == "127.0.0.1":
     server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
 server_port = 4030 #Default port used by SkySafari
 
-high_precision = False
+#If default to low precision, SkySafari turns it on anyway:
+high_precision = True
 
 #Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
 local_site = obstools.Site(coords.AngularCoordinate("+51d28m38s"),
@@ -241,6 +242,10 @@ def precision_toggle():
     """
     global high_precision
     high_precision = not high_precision
+    if high_precision:
+        sys.stderr.write("Toggled high precision, now ON.\n")
+    else:
+        sys.stderr.write("Toggled high precision, now OFF.\n")
     return None
 
 def set_site_latitude(value):
