@@ -131,11 +131,11 @@ def get_telescope_ra():
     Depending which precision is set for the telescope
     """
     if high_precision:
+        return "03:25:21#"
+    else:
         #The .T is for tenths of a minute, see e.g.
         #http://www.manualslib.com/manual/295083/Meade-Lx200.html?page=55
         return "03:25.0#"
-    else:
-        return "03:25.21#"
 
 def get_telescope_de():
     """For the :GD# command, Get Telescope Declination.
