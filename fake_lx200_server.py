@@ -132,6 +132,7 @@ def alt_az_to_equatorial(alt, az):
     if sin(az) > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
     ra = greenwich_sidereal_time_in_radians() - local_site.longitude.r - hours_in_rad
+    while ra < 0: ra += 2*pi
     return ra, dec
 
 def cm_sync():
