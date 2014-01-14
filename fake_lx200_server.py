@@ -90,6 +90,12 @@ local_az = 30 * pi / 180.0
 target_ra = 0.0
 target_dec = 0.0
 
+def _check_close(a, b, error=0.0001):
+    diff = abs(a-b)
+    if diff > error:
+        raise ValueError("%s vs %s, difference %s > %s"
+                         % (a, b, diff, error))
+
 def site_time_gmt_as_epoch():
     global local_time_offset
     return time.time() + local_time_offset
@@ -162,11 +168,11 @@ def parse_hhmm(value):
         h, m, s = [int(v) for v in parts]
     # 12 hours = 43200 seconds = pi radians
     return (h*3600 + m*60 + s) * pi / 43200
-#assert parse_hhmm("00:02.3")  == 0.0050178215994, parse_hhmm("00:02.3")
-#assert parse_hhmm("00:02.4")  == 0.00523598775598, parse_hhmm("00:02.4")
-#assert parse_hhmm("00:02:17") == 0.0049814605734, parse_hhmm("00:02:17")
-#assert parse_hhmm("00:02:18") == 0.00501782159948, parse_hhmm("00:02:18")
-#assert parse_hhmm("12:00:00") == pi, parse_hhmm("12:00:00")
+_check_close(parse_hhmm("00:02.3"),  0.010035643198967393)
+_check_close(parse_hhmm("00:02.4"),  0.010471975511965976)
+_check_close(parse_hhmm("00:02:17"), 0.009962921146800963)
+_check_close(parse_hhmm("00:02:18"), 0.010035643198967393)
+_check_close(parse_hhmm("12:00:00"), pi)
 
 def parse_sddmm(value):
     """Turn string sDD*MM or sDD*MM:SS into radians."""
@@ -193,8 +199,9 @@ def radians_to_hms(angle):
     fraction, hours = modf(angle * 12 / pi)
     fraction, minutes = modf(fraction * 60)
     return hours, minutes, fraction * 60
-assert radians_to_hms(0.01) == (0, 2, 17.50987083139755), radians_to_hms(0.01)
-assert radians_to_hms(6.28) == (23.0, 59.0, 16.198882117679716), radians_to_hms(6.28)
+#TODO - Testing tuples
+#_check_close(radians_to_hms(0.01), (0, 2, 17.50987083139755))
+#_check_close(radians_to_hms(6.28), (23.0, 59.0, 16.198882117679716))
 
 def radians_to_hhmmss(angle):
     while angle < 0.0:
@@ -234,17 +241,13 @@ def radians_to_sddmmss(angle):
 for r in [-0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
-    #print abs(parse_sddmm(radians_to_sddmm(r).rstrip("#")) - r)
-    assert abs(parse_sddmm(radians_to_sddmm(r).rstrip("#")) - r) < 0.01, r
-    #print abs(parse_sddmm(radians_to_sddmmss(r).rstrip("#")) - r)
-    assert abs(parse_sddmm(radians_to_sddmmss(r).rstrip("#")) - r) < 0.005, r
+    _check_close(parse_sddmm(radians_to_sddmm(r).rstrip("#")), r, 0.01)
+    _check_close(parse_sddmm(radians_to_sddmmss(r).rstrip("#")), r, 0.005)
 for r in [0, 0.01, 0.1, pi, 2*pi]:
     #Testing dec from 0 to 2*pi
     assert 0 <= r <= 2*pi, r
-    #print abs(parse_hhmm(radians_to_hhmmt(r).rstrip("#")) - r)
-    assert abs(parse_hhmm(radians_to_hhmmt(r).rstrip("#")) - r) < 0.0001, r
-    #print abs(parse_hhmm(radians_to_hhmmss(r).rstrip("#")) - r)
-    assert abs(parse_hhmm(radians_to_hhmmss(r).rstrip("#")) - r) < 0.0001, r
+    _check_close(parse_hhmm(radians_to_hhmmt(r).rstrip("#")), r)
+    _check_close(parse_hhmm(radians_to_hhmmss(r).rstrip("#")), r)
 
 
 def get_telescope_ra():
