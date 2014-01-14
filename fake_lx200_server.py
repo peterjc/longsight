@@ -58,7 +58,7 @@ import sys
 import commands
 import time
 import datetime
-from math import pi, sin, cos, asin, acos, modf
+from math import pi, sin, cos, asin, acos, atan2, modf
 
 #TODO - Try astropy if I can get it to compile on Mac OS X...
 from astropysics import coords
@@ -91,6 +91,15 @@ target_ra = 0.0
 target_dec = 0.0
 
 def _check_close(a, b, error=0.0001):
+    if isinstance(a, (tuple, list)):
+        assert isinstance(b, (tuple, list))
+        assert len(a) == len(b)
+        for a1, b1 in zip(a, b):
+            diff = abs(a1-b1)
+            if diff > error:
+                raise ValueError("%s vs %s, for %s vs %s difference %s > %s"
+                         % (a, b, a1, b1, diff, error))
+        return
     diff = abs(a-b)
     if diff > error:
         raise ValueError("%s vs %s, difference %s > %s"
@@ -124,16 +133,55 @@ def greenwich_sidereal_time_in_radians():
     #Convert from hours to radians... 24hr = 2*pi
     return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
 
-def alt_az_to_equatorial(alt, az):
+def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
+    if gst is None:
+        gst = greenwich_sidereal_time_in_radians()
     lat = local_site.latitude.r
-    dec  = asin(sin(alt)*sin(lat) + cos(alt)*cos(lat)*cos(az))
-    hours_in_rad = acos((sin(alt) - sin(lat)*sin(dec)) / (cos(lat)*cos(dec)))
-    if sin(az) > 0.0:
+    #Calculate these once only for speed
+    sin_lat = sin(lat)
+    cos_lat = cos(lat)
+    sin_alt = sin(alt)
+    cos_alt = cos(alt)
+    sin_az = sin(az)
+    cos_az = cos(az)
+    dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
+    hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
+    if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
-    ra = greenwich_sidereal_time_in_radians() - local_site.longitude.r - hours_in_rad
-    while ra < 0: ra += 2*pi
-    return ra, dec
+    ra = gst - local_site.longitude.r - hours_in_rad
+    return ra % (pi*2), dec
+
+def equatorial_to_alt_az(ra, dec, gst=None):
+    global local_site #and time offset used too
+    if gst is None:
+        gst = greenwich_sidereal_time_in_radians()
+    lat = local_site.latitude.r
+    #Calculate these once only for speed
+    sin_lat = sin(lat)
+    cos_lat = cos(lat)
+    sin_dec = sin(dec)
+    cos_dec = cos(dec)
+    h = gst - local_site.longitude.r - ra
+    sin_h = sin(h)
+    cos_h = cos(h)
+    alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
+    az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
+    return alt, az % (2*pi)
+#This test implicitly assumes time between two calculations not significant:
+_check_close((0.0, 0.0), equatorial_to_alt_az(*alt_az_to_equatorial(0.0, 0.0)))
+_check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
+#_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
+#_check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
+
+#This ensures identical time stamp used:
+gst = greenwich_sidereal_time_in_radians()
+for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
+    for dec in [-0.49*pi, -1.1, -1, 0, 0.001, 1.55, 0.49*pi]:
+        alt, az = equatorial_to_alt_az(ra, dec, gst)
+        #print ra, dec, alt, az
+        _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
+del gst, ra, dec
 
 def cm_sync():
     """For the :CM# command, Synchronizes the telescope's position with the currently selected database object's coordinates.
@@ -143,6 +191,14 @@ def cm_sync():
     Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
     """
     #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
+    global local_alt, local_az, target_alt, target_dec
+    sys.stderr.write("Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
+                     (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
+    sys.stderr.write("New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
+                     (radians_to_hhmmss(target_ra), target_ra, radians_to_sddmmss(target_dec), target_dec))
+    local_alt, local_az = equatorial_to_alt_az(target_ra, target_dec)
+    sys.stderr.write("Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
+                     (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     return "M31 EX GAL MAG 3.5 SZ178.0'"
 
 def move_to_target():
@@ -200,13 +256,15 @@ _check_close(parse_sddmm("+00*01:00"), 0.000290888208666)
 _check_close(parse_sddmm("+57*17:45"), 1.0)
 _check_close(parse_sddmm("+57*18"), 1.0)
 
+_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
+_check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
+
 def radians_to_hms(angle):
     fraction, hours = modf(angle * 12 / pi)
     fraction, minutes = modf(fraction * 60)
     return hours, minutes, fraction * 60
-#TODO - Testing tuples
-#_check_close(radians_to_hms(0.01), (0, 2, 17.50987083139755))
-#_check_close(radians_to_hms(6.28), (23.0, 59.0, 16.198882117679716))
+_check_close(radians_to_hms(0.01), (0, 2, 17.50987083139755))
+_check_close(radians_to_hms(6.28), (23.0, 59.0, 16.198882117679716))
 
 def radians_to_hhmmss(angle):
     while angle < 0.0:
@@ -276,8 +334,9 @@ def get_telescope_de():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
-    ra,dec = alt_az_to_equatorial(local_alt, local_az)
-    print ra, dec
+    ra, dec = alt_az_to_equatorial(local_alt, local_az)
+    sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
+                     % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
     if high_precision:
         return radians_to_sddmmss(dec)
     else:
@@ -289,6 +348,7 @@ def set_target_ra(value):
     Set target object RA to HH:MM.T or HH:MM:SS depending on the current precision setting.
     Returns: 0 - Invalid, 1 - Valid
     """
+    global target_ra
     try:
         target_ra = parse_hhmm(value)
         sys.stderr.write("Parsed right-ascension :Sr%s# command as %0.5f radians\n" % (value, target_ra))
@@ -303,6 +363,7 @@ def set_target_de(value):
     Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
     Returns: 1 - Dec Accepted, 0 - Dec invalid
     """
+    global target_dec
     try:
         target_dec = parse_sddmm(value)
         sys.stderr.write("Parsed declination :Sd%s# command as %0.5f radians\n" % (value, target_dec))
