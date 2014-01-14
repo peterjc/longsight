@@ -82,9 +82,13 @@ local_site = obstools.Site(coords.AngularCoordinate("+51d28m38s"),
 #client (which should match any location set by the client).
 local_time_offset = 0
 
-#These will come from sensor information...
+#These will come from sensor information... storing them in radians
 local_alt = 85 * pi / 180.0
 local_az = 30 * pi / 180.0
+
+#These will come from the client... store them in radians
+target_ra = 0.0
+target_dec = 0.0
 
 def site_time_gmt_as_epoch():
     global local_time_offset
@@ -147,24 +151,64 @@ def move_to_target():
     #target is below the horizon (1) or out of reach of the mount (2).
     return "2Sorry, no goto"
 
+def parse_hhmm(value):
+    """Turn string HH:MM.T or HH:MM:SS into radians."""
+    parts = value.split(":")
+    if len(parts) == 2:
+        h = int(parts[0])
+        m = float(parts[1])
+        s = 0
+    else:
+        h, m, s = [int(v) for v in parts]
+    # 12 hours = 43200 seconds = pi radians
+    return (h*3600 + m*60 + s) * pi / 43200
+#assert parse_hhmm("00:02.3")  == 0.0050178215994, parse_hhmm("00:02.3")
+#assert parse_hhmm("00:02.4")  == 0.00523598775598, parse_hhmm("00:02.4")
+#assert parse_hhmm("00:02:17") == 0.0049814605734, parse_hhmm("00:02:17")
+#assert parse_hhmm("00:02:18") == 0.00501782159948, parse_hhmm("00:02:18")
+#assert parse_hhmm("12:00:00") == pi, parse_hhmm("12:00:00")
+
+def parse_sddmm(value):
+    """Turn string sDD*MM or sDD*MM:SS into radians."""
+    if value[3] != "*":
+        raise ValueError("Bad format %r" % value)
+    if value[0] == "+":
+        sign = +1
+    elif value[0] == "-":
+        sign = -1
+    else:
+        raise ValueError("Bad sign in %r" % value)
+    deg = int(value[1:3])
+    if len(value) == 6:
+        arc_minutes = int(value[4:6])
+        arc_seconds = 0
+    elif len(value) != 9 or value[6] != ":":
+        raise ValueError("Bad format %r" % value)
+    else:
+        arc_minutes = int(value[4:6])
+        arc_seconds = int(value[7:9])
+    return sign * (deg + arc_minutes/60.0 + arc_seconds/360.0) * pi / 180.0
+
 def radians_to_hms(angle):
-    fraction, hours = modf(angle)
+    fraction, hours = modf(angle * 12 / pi)
     fraction, minutes = modf(fraction * 60)
     return hours, minutes, fraction * 60
+assert radians_to_hms(0.01) == (0, 2, 17.50987083139755), radians_to_hms(0.01)
+assert radians_to_hms(6.28) == (23.0, 59.0, 16.198882117679716), radians_to_hms(6.28)
 
 def radians_to_hhmmss(angle):
     while angle < 0.0:
         sys.stderr.write("Warning, radians_to_hhmmss called with %0.2f\n" % angle)
         angle += 2*pi
-    assert angle >= 0.0
-    return "%02i:%02i:%02i#" % radians_to_hms(angle)
+    h, m, s = radians_to_hms(angle)
+    return "%02i:%02i:%02i#" % (h, m, round(s))
 
 def radians_to_hhmmt(angle):
     while angle < 0.0:
         sys.stderr.write("Warning, radians_to_hhmmt called with %0.2f\n" % angle)
         angle += 2*pi
     h, m, s = radians_to_hms(angle)
-    return "%02i:%02i:%01i#" % (h, m, s / 60.0)
+    return "%02i:%02i.%01i#" % (h, m, round(s / 6))
 
 def radians_to_sddmm(angle):
     """Signed degrees, arc-minutes as sDD*MM# for protocol."""
@@ -174,10 +218,10 @@ def radians_to_sddmm(angle):
     else:
         sign = "+"
     fraction, degrees = modf(angle * 180 / pi)
-    return "%s%03i*%02i#" % (sign, degrees, fraction * 60.0)
+    return "%s%02i*%02i#" % (sign, degrees, round(fraction * 60.0))
 
 def radians_to_sddmmss(angle):
-    """Signed degrees, arc-minutes, arc-seconds as sDD*MM'SS# for protocol."""
+    """Signed degrees, arc-minutes, arc-seconds as sDD*MM:SS# for protocol."""
     if angle < 0.0:
         sign = "-"
         angle = abs(angle)
@@ -185,7 +229,22 @@ def radians_to_sddmmss(angle):
         sign = "+"
     fraction, degrees = modf(angle * 180 / pi)
     fraction, arcminutes = modf(fraction * 60.0)
-    return "%s%02i*%02i'%02i#" % (sign, degrees, arcminutes, fraction * 60.0)
+    return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
+
+for r in [-0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
+    #Testing RA from -pi/2 to pi/2
+    assert -0.5*pi <= r <= 0.5*pi, r
+    #print abs(parse_sddmm(radians_to_sddmm(r).rstrip("#")) - r)
+    assert abs(parse_sddmm(radians_to_sddmm(r).rstrip("#")) - r) < 0.01, r
+    #print abs(parse_sddmm(radians_to_sddmmss(r).rstrip("#")) - r)
+    assert abs(parse_sddmm(radians_to_sddmmss(r).rstrip("#")) - r) < 0.005, r
+for r in [0, 0.01, 0.1, pi, 2*pi]:
+    #Testing dec from 0 to 2*pi
+    assert 0 <= r <= 2*pi, r
+    #print abs(parse_hhmm(radians_to_hhmmt(r).rstrip("#")) - r)
+    assert abs(parse_hhmm(radians_to_hhmmt(r).rstrip("#")) - r) < 0.0001, r
+    #print abs(parse_hhmm(radians_to_hhmmss(r).rstrip("#")) - r)
+    assert abs(parse_hhmm(radians_to_hhmmss(r).rstrip("#")) - r) < 0.0001, r
 
 
 def get_telescope_ra():
@@ -222,15 +281,27 @@ def set_target_ra(value):
     Set target object RA to HH:MM.T or HH:MM:SS depending on the current precision setting.
     Returns: 0 - Invalid, 1 - Valid
     """
-    return "1"
+    try:
+        target_ra = parse_hhmm(value)
+        sys.stderr.write("Parsed right-ascension :Sr%s# command as %0.5f radians\n" % (value, target_ra))
+        return "1"
+    except Exception as err:
+        sys.stderr.write("Error parsing right-ascension :Sr%s# command: %s\n" % (value, err))
+        return "0"
 
 def set_target_de(value):
-    """For the command :SdsDD*MM#
+    """For the command :SdsDD*MM# or :SdsDD*MM:SS#
 
     Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
     Returns: 1 - Dec Accepted, 0 - Dec invalid
     """
-    return "1"
+    try:
+        target_dec = parse_sddmm(value)
+        sys.stderr.write("Parsed declination :Sd%s# command as %0.5f radians\n" % (value, target_dec))
+        return "1"
+    except Exception as err:
+        sys.stderr.write("Error parsing declination :Sd%s# command: %s\n" % (value, err))
+        return "0"
 
 def precision_toggle():
     """For the :U# command, Toggle between low/hi precision positions
