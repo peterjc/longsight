@@ -193,7 +193,11 @@ def parse_sddmm(value):
     else:
         arc_minutes = int(value[4:6])
         arc_seconds = int(value[7:9])
-    return sign * (deg + arc_minutes/60.0 + arc_seconds/360.0) * pi / 180.0
+    return sign * (deg + arc_minutes/60.0 + arc_seconds/3600.0) * pi / 180.0
+_check_close(parse_sddmm("+00*01"), 0.000290888208666)
+_check_close(parse_sddmm("+00*01:00"), 0.000290888208666)
+_check_close(parse_sddmm("+57*17:45"), 1.0)
+_check_close(parse_sddmm("+57*18"), 1.0)
 
 def radians_to_hms(angle):
     fraction, hours = modf(angle * 12 / pi)
@@ -238,11 +242,11 @@ def radians_to_sddmmss(angle):
     fraction, arcminutes = modf(fraction * 60.0)
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
 
-for r in [-0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
+for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
-    _check_close(parse_sddmm(radians_to_sddmm(r).rstrip("#")), r, 0.01)
-    _check_close(parse_sddmm(radians_to_sddmmss(r).rstrip("#")), r, 0.005)
+    _check_close(parse_sddmm(radians_to_sddmm(r).rstrip("#")), r, 0.0002)
+    _check_close(parse_sddmm(radians_to_sddmmss(r).rstrip("#")), r)
 for r in [0, 0.01, 0.1, pi, 2*pi]:
     #Testing dec from 0 to 2*pi
     assert 0 <= r <= 2*pi, r
