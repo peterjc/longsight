@@ -169,7 +169,6 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
     return alt, az % (2*pi)
 #This test implicitly assumes time between two calculations not significant:
-_check_close((0.0, 0.0), equatorial_to_alt_az(*alt_az_to_equatorial(0.0, 0.0)))
 _check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
 #_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
 #_check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
@@ -212,7 +211,11 @@ def move_to_target():
     #SkySafari's "goto" command sends this after a pair of :Sr# and :Sd# commands.
     #For return code 1 and 2 the error message is not shown, simply that the
     #target is below the horizon (1) or out of reach of the mount (2).
-    return "2Sorry, no goto"
+    ra, dec = alt_az_to_equatorial(local_alt, local_az)
+    if dec < 0:
+        return "1Target declination negative"
+    else:
+        return "2Sorry, no goto"
 
 def parse_hhmm(value):
     """Turn string HH:MM.T or HH:MM:SS into radians."""
