@@ -60,7 +60,39 @@ except ImportError:
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/sensors/hmc5883l.py\n")
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
     sys.exit(1)
-        
+
+
+def quaternion_from_rotation_matrix_rows(row0, row1, row2):
+    #No point merging three rows into a 3x3 matrix if just want quaternion
+    #Based on several sources including the C++ implementation here:
+    #http://www.camelsoftware.com/firetail/blog/uncategorized/quaternion-based-ahrs-using-altimu-10-arduino/
+    trace = row0[0] + row1[1] + row2[2]
+    if trace > row2[2]:
+        S = sqrt(1.0 + trace) *  2
+        w = 0.25 * S
+        x = (row2[1] - row1[2]) / S
+        y = (row0[2] - row2[0]) / S
+        z = (row1[0] - row0[1]) / S
+    elif row0[0] < row1[1] and row0[0] < row2[2]:
+        S = sqrt(1.0 + row0[0] - row1[1] - row2[2]) * 2
+        w = (row2[1] - row1[2]) / S
+        x = 0.25 * S
+        y = (row0[1] + row1[0]) / S
+        z = (row0[2] + row2[0]) / S
+    elif row1[1] < row2[2]:
+        S = sqrt(1.0 + row1[1] - row0[0] - row2[2]) * 2
+        w = (row0[2] - row2[0]) / S
+        x = (row0[1] + row1[0]) / S
+        y = 0.25 * S
+        z = (row1[2] + row2[1]) / S
+    else:
+        S = sqrt(1.0 + row2[2] - row0[0] - row1[1]) * 2
+        w = (row1[0] - row0[1]) / S
+        x = (row0[2] + row2[0]) / S
+        y = (row1[2] + row2[1]) / S
+        z = 0.25 * S
+    return w, x, y, z
+
 
 class GY80(object):
     def __init__(self, bus=None):
@@ -73,7 +105,8 @@ class GY80(object):
         self.compass = HMC5883L(bus=smbus.SMBus(i2c_bus), address = 0x1e, name="compass")
         self.barometer = BMP085() # Can't set bus as option
 
-        #Establish NED frame of reference (North, East, Down)
+    def current_orientation(self):
+        """Current orientation using North, East, Down (NED) frame of reference."""
         #Can't use v_mag directly as North since it will usually not be
         #quite horizontal (requiring tilt compensation), establish this
         #using the up/down axis from the accelerometer.
@@ -87,7 +120,7 @@ class GY80(object):
         v_down /= sqrt((v_down ** 2).sum())
         v_east /= sqrt((v_east ** 2).sum())
         v_north /= sqrt((v_north ** 2).sum())
-        print("Down: %s, East: %s, North: %s" % (v_down, v_east, v_north))
+        return quaternion_from_rotation_matrix_rows(v_north, v_east, v_down)
 
     def read_accel(self):
         """Returns an X, Y, Z tuple."""
@@ -109,7 +142,7 @@ if __name__ == "__main__":
     imu = GY80()
     try:
         while True:
-            print(imu.read_accel())
+            print(imu.current_orientation())
             sleep(1)
     except KeyboardInterrupt:
         print()
