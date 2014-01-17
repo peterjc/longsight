@@ -65,7 +65,7 @@ from astropysics import coords
 from astropysics import obstools
 
 server_name = socket.gethostbyname(socket.gethostname())
-if server_name == "127.0.0.1":
+if server_name.startswith("127.0."): #e.g. 127.0.0.1
     #This works on Linux but not on Mac OS X or Windows:
     server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
 server_port = 4030 #Default port used by SkySafari
@@ -195,6 +195,7 @@ def cm_sync():
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     sys.stderr.write("New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
                      (radians_to_hhmmss(target_ra), target_ra, radians_to_sddmmss(target_dec), target_dec))
+    #TODO - Calculate/update calibration instead
     local_alt, local_az = equatorial_to_alt_az(target_ra, target_dec)
     sys.stderr.write("Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
