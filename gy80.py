@@ -37,7 +37,7 @@ from __future__ import print_function
 
 import sys
 from time import sleep
-from math import pi, sin, cos, atan2, sqrt
+from math import pi, sin, cos, asin, acos, atan2, sqrt
 import numpy as np
 import smbus
 
@@ -61,6 +61,21 @@ except ImportError:
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
     sys.exit(1)
 
+
+def _check_close(a, b, error=0.0001):
+    if isinstance(a, (tuple, list)):
+        assert isinstance(b, (tuple, list))
+        assert len(a) == len(b)
+        for a1, b1 in zip(a, b):
+            diff = abs(a1-b1)
+            if diff > error:
+                raise ValueError("%s vs %s, for %s vs %s difference %s > %s"
+                         % (a, b, a1, b1, diff, error))
+        return
+    diff = abs(a-b)
+    if diff > error:
+        raise ValueError("%s vs %s, difference %s > %s"
+                         % (a, b, diff, error))
 
 def quaternion_from_rotation_matrix_rows(row0, row1, row2):
     #No point merging three rows into a 3x3 matrix if just want quaternion
@@ -92,6 +107,51 @@ def quaternion_from_rotation_matrix_rows(row0, row1, row2):
         y = (row1[2] + row2[1]) / S
         z = 0.25 * S
     return w, x, y, z
+
+#TODO - Double check which angles exactly have I calculated (which frame etc)?
+def quaternion_from_euler_angles(yaw, pitch, roll):
+    """Returns (w, x, y, z) quaternion from angles in radians."""
+    #Roll = phi, pitch = theta, yaw = psi
+    return (cos(roll/2)*cos(pitch/2)*cos(yaw/2) + sin(roll/2)*sin(pitch/2)*sin(yaw/2),
+            sin(roll/2)*cos(pitch/2)*cos(yaw/2) - cos(roll/2)*sin(pitch/2)*sin(yaw/2),
+            cos(roll/2)*sin(pitch/2)*cos(yaw/2) + sin(roll/2)*cos(pitch/2)*sin(yaw/2),
+            cos(roll/2)*cos(pitch/2)*sin(yaw/2) - sin(roll/2)*sin(pitch/2)*cos(yaw/2))
+
+def quaternion_to_euler_angles(w, x, y, z):
+    """Returns angles about Z, Y, X axes in radians (yaw, pitch, roll)."""
+    w2 = w*w
+    x2 = x*x
+    y2 = y*y
+    z2 = z*z
+    return (atan2(2.0 * (x*y + z*w), (w2 + x2 - y2 - z2)), # -pi to pi
+            asin(2.0 * (w*y - x*z) / (w2 + x2 + y2 + z2)), # -pi/2 to +pi/2
+            atan2(2.0 * (y*z + x*w), (w2 - x2 - y2 + z2))) # -pi to pi
+
+_check_close(quaternion_to_euler_angles(0, 1, 0, 0), (0, 0, pi))
+_check_close(quaternion_to_euler_angles(0,-1, 0, 0), (0, 0, pi))
+_check_close(quaternion_from_euler_angles(0, 0, pi), (0, 1, 0, 0))
+
+_check_close(quaternion_to_euler_angles(0, 0, 1, 0), (pi, 0, pi))
+_check_close(quaternion_to_euler_angles(0, 0,-1, 0), (pi, 0, pi))
+_check_close(quaternion_from_euler_angles(pi, 0, pi), (0, 0, 1, 0))
+
+_check_close(quaternion_to_euler_angles(0, 0, 0, 1), (pi, 0, 0))
+_check_close(quaternion_to_euler_angles(0, 0, 0,-1), (pi, 0, 0))
+_check_close(quaternion_from_euler_angles(pi, 0, 0), (0, 0, 0, 1))
+
+_check_close(quaternion_to_euler_angles(0, 0, 0.5*sqrt(2), 0.5*sqrt(2)), (pi, 0, pi/2))
+_check_close(quaternion_from_euler_angles(pi, 0, pi/2), (0, 0, 0.5*sqrt(2), 0.5*sqrt(2)))
+
+_check_close(quaternion_to_euler_angles(0, 0.5*sqrt(2), 0, 0.5*sqrt(2)), (0, -pi/2, 0))
+_check_close(quaternion_to_euler_angles(0.5*sqrt(2), 0,-0.5*sqrt(2), 0), (0, -pi/2, 0))
+_check_close(quaternion_from_euler_angles(0, -pi/2, 0), (0.5*sqrt(2), 0, -0.5*sqrt(2), 0))
+
+_check_close(quaternion_to_euler_angles(0, 1, 1, 0), (pi/2, 0, pi)) #Not normalised
+_check_close(quaternion_to_euler_angles(0, 0.5*sqrt(2), 0.5*sqrt(2), 0), (pi/2, 0, pi))
+_check_close(quaternion_from_euler_angles(pi/2, 0, pi), (0, 0.5*sqrt(2), 0.5*sqrt(2), 0))
+
+#w, x, y, z = quaternion_from_euler_angles(pi, 0, pi)
+#print("quarternion (%0.2f, %0.2f, %0.2f, %0.2f) magnitude %0.2f" % (w, x, y, z, sqrt(w*w + x*x + y*y + z*z)))
 
 
 class GY80(object):
@@ -142,7 +202,14 @@ if __name__ == "__main__":
     imu = GY80()
     try:
         while True:
-            print(imu.current_orientation())
+            w, x, y, z = imu.current_orientation()
+            print("Quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
+            yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
+            print("My function gives Euler angles %0.2f, %0.2f, %0.2f (radians), "
+                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (yaw, pitch, roll,
+                                                                    yaw   * 180.0 / pi,
+                                                                    pitch * 180.0 / pi,
+                                                                    roll  * 180.0 / pi))
             sleep(1)
     except KeyboardInterrupt:
         print()
