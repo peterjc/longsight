@@ -64,6 +64,14 @@ from math import pi, sin, cos, asin, acos, atan2, modf
 from astropysics import coords
 from astropysics import obstools
 
+#Local import
+from gy80 import GY80
+
+print("Connecting to sensors...")
+imu = GY80()
+print("Connected to GY-80 sensor")
+
+print("Opening network port...")
 server_name = socket.gethostbyname(socket.gethostname())
 if server_name.startswith("127.0."): #e.g. 127.0.0.1
     #This works on Linux but not on Mac OS X or Windows:
@@ -81,6 +89,12 @@ local_site = obstools.Site(coords.AngularCoordinate("+51d28m38s"),
 #between the local computer's date/time and any date/time set by the
 #client (which should match any location set by the client).
 local_time_offset = 0
+
+#This will probably best be inferred by calibration...
+#For Greenwich, magnetic north is estimated to be 2 deg 40 min west
+#of grid north at Greenwich in July 2013.
+#http://www.geomag.bgs.ac.uk/data_service/models_compass/gma_calc.html
+local_site_magnetic_offset = -2.67 * pi / 180.0
 
 #These will come from sensor information... storing them in radians
 local_alt = 85 * pi / 180.0
@@ -104,6 +118,17 @@ def _check_close(a, b, error=0.0001):
     if diff > error:
         raise ValueError("%s vs %s, difference %s > %s"
                          % (a, b, diff, error))
+
+def update_alt_az():
+    global imu, local_site_magnetic_offset, local_alt, local_az
+    yaw, pitch, roll = imu.current_orientation_euler_angles()
+    #Yaw is measured from (magnetic) North, but wrt sensor so -ve
+    #Azimuth is measure from true North:
+    local_az = (local_site_magnetic_offset - yaw) % (2*pi)
+    #Pitch is measured downwards (using airplane style NED system)
+    #Altitude is measured upwards
+    local_alt = pitch
+    #We don't care about the pitch for the Meade LX200 protocol.
 
 def site_time_gmt_as_epoch():
     global local_time_offset
@@ -212,6 +237,7 @@ def move_to_target():
     #SkySafari's "goto" command sends this after a pair of :Sr# and :Sd# commands.
     #For return code 1 and 2 the error message is not shown, simply that the
     #target is below the horizon (1) or out of reach of the mount (2).
+    update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if dec < 0:
         return "1Target declination negative"
@@ -324,6 +350,7 @@ def get_telescope_ra():
     Depending which precision is set for the telescope
     """
     #TODO - Since :GR# and :GD# commands normally in pairs, cache this?
+    update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if high_precision:
         return radians_to_hhmmss(ra)
@@ -338,6 +365,7 @@ def get_telescope_de():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
+    update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
                      % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
