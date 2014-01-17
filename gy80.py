@@ -61,6 +61,14 @@ except ImportError:
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
     sys.exit(1)
 
+try:
+    import transformations
+except ImportError:
+    transformations = None
+    sys.stderr.write("Christoph Gohlke's transformation functions used for testing available from\n")
+    sys.stderr.write("http://www.lfd.uci.edu/~gohlke/code/transformations.py.html\n")
+    sys.stderr.write("e.g.\n$wget http://www.lfd.uci.edu/~gohlke/code/transformations.py\n\n")
+
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -110,7 +118,11 @@ def quaternion_from_rotation_matrix_rows(row0, row1, row2):
 
 #TODO - Double check which angles exactly have I calculated (which frame etc)?
 def quaternion_from_euler_angles(yaw, pitch, roll):
-    """Returns (w, x, y, z) quaternion from angles in radians."""
+    """Returns (w, x, y, z) quaternion from angles in radians.
+
+    Assuming angles given in the moving frame of reference of the sensor,
+    not a fixed Earth bound observer.
+    """
     #Roll = phi, pitch = theta, yaw = psi
     return (cos(roll/2)*cos(pitch/2)*cos(yaw/2) + sin(roll/2)*sin(pitch/2)*sin(yaw/2),
             sin(roll/2)*cos(pitch/2)*cos(yaw/2) - cos(roll/2)*sin(pitch/2)*sin(yaw/2),
@@ -118,7 +130,11 @@ def quaternion_from_euler_angles(yaw, pitch, roll):
             cos(roll/2)*cos(pitch/2)*sin(yaw/2) - sin(roll/2)*sin(pitch/2)*cos(yaw/2))
 
 def quaternion_to_euler_angles(w, x, y, z):
-    """Returns angles about Z, Y, X axes in radians (yaw, pitch, roll)."""
+    """Returns angles about Z, Y, X axes in radians (yaw, pitch, roll).
+
+    Using moving frame of reference of the sensor, not the fixed frame of
+    an Earth bound observer..
+    """
     w2 = w*w
     x2 = x*x
     y2 = y*y
@@ -210,6 +226,16 @@ if __name__ == "__main__":
                                                                     yaw   * 180.0 / pi,
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))
+            if transformations:
+                q = np.array([w, x, y, z], np.float)
+                for axes in ["rzyx", "szyx"]: # r = rotating, s = static
+                    yaw, pitch, roll = transformations.euler_from_quaternion(q, axes)
+                    print("Christoph Gohlke's %s angles %0.2f, %0.2f, %0.2f (radians), "
+                          "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)"
+                          % (axes, yaw, pitch, roll,
+                             yaw   * 180.0 / pi,
+                             pitch * 180.0 / pi,
+                             roll  * 180.0 / pi))
             sleep(1)
     except KeyboardInterrupt:
         print()
