@@ -61,14 +61,16 @@ except ImportError:
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
     sys.exit(1)
 
-try:
-    import transformations
-except ImportError:
+if False:
+    try:
+        import transformations
+    except ImportError:
+        transformations = None
+        sys.stderr.write("Christoph Gohlke's transformation functions used for testing available from\n")
+        sys.stderr.write("http://www.lfd.uci.edu/~gohlke/code/transformations.py.html\n")
+        sys.stderr.write("e.g.\n$wget http://www.lfd.uci.edu/~gohlke/code/transformations.py\n\n")
+else:
     transformations = None
-    sys.stderr.write("Christoph Gohlke's transformation functions used for testing available from\n")
-    sys.stderr.write("http://www.lfd.uci.edu/~gohlke/code/transformations.py.html\n")
-    sys.stderr.write("e.g.\n$wget http://www.lfd.uci.edu/~gohlke/code/transformations.py\n\n")
-
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -181,7 +183,7 @@ class GY80(object):
         self.compass = HMC5883L(bus=smbus.SMBus(i2c_bus), address = 0x1e, name="compass")
         self.barometer = BMP085() # Can't set bus as option
 
-    def current_orientation(self):
+    def current_orientation_quaternion(self):
         """Current orientation using North, East, Down (NED) frame of reference."""
         #Can't use v_mag directly as North since it will usually not be
         #quite horizontal (requiring tilt compensation), establish this
@@ -197,6 +199,10 @@ class GY80(object):
         v_east /= sqrt((v_east ** 2).sum())
         v_north /= sqrt((v_north ** 2).sum())
         return quaternion_from_rotation_matrix_rows(v_north, v_east, v_down)
+
+    def current_orientation_euler_angles(self):
+        """Current orientation using yaw, pitch, roll (radians) using sensor's frame."""
+        return quaternion_to_euler_angles(*self.current_orientation_quaternion())
 
     def read_accel(self):
         """Returns an X, Y, Z tuple."""
@@ -218,7 +224,7 @@ if __name__ == "__main__":
     imu = GY80()
     try:
         while True:
-            w, x, y, z = imu.current_orientation()
+            w, x, y, z = imu.current_orientation_quaternion()
             print("Quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
             print("My function gives Euler angles %0.2f, %0.2f, %0.2f (radians), "
