@@ -261,7 +261,7 @@ class GY80(object):
         return quaternion_to_euler_angles(*self.smoothed_orientation_quaternion())
 
     def read_accel(self, scaled=True):
-        """Returns an X, Y, Z tuple."""
+        """Returns an X, Y, Z tuple; if scaled in units of gravity."""
         accel = self.accel
         accel.read_raw_data()
         if scaled:
@@ -305,6 +305,15 @@ class GY80(object):
 if __name__ == "__main__":
     print("Starting...")
     imu = GY80()
+
+    #Sanity test:
+    x, y, z = imu.read_accel()
+    g = sqrt(x*x + y*y + z*z)
+    print("Magnitude of acceleration %0.2fg (%0.2f %0.2f %0.2f)" % (g, x, y, z))
+    if abs(g - 1) > 0.3:
+        sys.stderr.write("Not starting from rest, acceleration %0.2f\n" % g)
+        sys.exit(1)
+          
     try:
         while True:
             print("Cummulative gyro rotation %0.2f %0.2f %0.2f (radians)" % tuple(imu._v_gyro))
