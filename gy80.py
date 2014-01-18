@@ -41,22 +41,15 @@ from math import pi, sin, cos, asin, acos, atan2, sqrt
 import numpy as np
 import smbus
 
-#Non-standard modules:
 try:
-    from Adafruit_I2C import Adafruit_I2C
-    from Adafruit_ADXL345 import Adafruit_ADXL345 as ADXL345
-    from Adafruit_BMP085 import BMP085
-except ImportError:
-    sys.stderr.write("Ensure Adafruit_ADXL345.py, Adafruit_BMP085.py and Adafruit_I2C.py are present\n")
-    sys.stderr.write("\nSee: https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code\n")
-    sys.exit(1)
-
-try:
+    from adxl345 import ADXL345
     from hmc5883l import HMC5883L
+    from bmp085 import BMP085
+    from l3g4200d import L3G4200D
     from i2cutils import i2c_raspberry_pi_bus_number
 except ImportError:
-    sys.stderr.write("Ensure hmc5883l.py and i2cutils.py are present and importable\n")
-    sys.stderr.write("\nSee the following links, tweak the i2cutils import inside hmc58831.py:\n")
+    sys.stderr.write("Ensure adxl345.py, hmc5883l.py bmp085.py, l3g4200d.py and i2cutils.py are present and importable\n")
+    sys.stderr.write("\nSee the following links, tweak the i2cutils import inside hmc58831.py etc:\n")
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/sensors/hmc5883l.py\n")
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
     sys.exit(1)
@@ -196,13 +189,13 @@ def smooth_cache(values):
 class GY80(object):
     def __init__(self, bus=None):
         if bus is None:
-            i2c_bus = i2c_raspberry_pi_bus_number()
+            bus = smbus.SMBus(i2c_raspberry_pi_bus_number())
 
         #Default ADXL345 range +/- 2g is ideal for telescope use
-        self.accel = ADXL345(busnum=i2c_bus)
-        #self.gyro = ...
-        self.compass = HMC5883L(bus=smbus.SMBus(i2c_bus), address = 0x1e, name="compass")
-        self.barometer = BMP085() # Can't set bus as option
+        self.accel = ADXL345(bus, 0x53, name="accel")
+        self.gyro = L3G4200D(bus, 0x69, name="gyro")
+        self.compass = HMC5883L(bus, 0x1e, name="compass")
+        self.barometer = BMP085(bus, 0x77, name="barometer")
 
         #Cache variable for crude smoothing,
         self._cache = []
@@ -260,20 +253,24 @@ class GY80(object):
         """Smoothed orientation using yaw, pitch, roll (radians) using sensor's frame."""
         return quaternion_to_euler_angles(*self.smoothed_orientation_quaternion())
 
-    def read_accel(self):
+    def read_accel(self, scaled=True):
         """Returns an X, Y, Z tuple."""
-        return self.accel.read()
+        accel = self.accel
+        accel.read_raw_data()
+        if scaled:
+            return accel.accel_scaled_x, accel.accel_scaled_y, accel.accel_scaled_z
+        else:
+            return accel.accel_raw_x, accel.accel_raw_y, accel.accel_raw_z
 
     def read_compass(self, scaled=True):
         """Returns an X, Y, Z tuple."""
         compass = self.compass
-        compass._read_raw_data()
+        compass.read_raw_data()
         if scaled:
             return compass.scaled_x, compass.scaled_y, compass.scaled_z
         else:
             return compass.raw_x, compass.raw_y, compass.raw_z
 
-                          
 
 if __name__ == "__main__":
     print("Starting...")
