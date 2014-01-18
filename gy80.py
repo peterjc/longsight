@@ -61,16 +61,6 @@ except ImportError:
     sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
     sys.exit(1)
 
-if False:
-    try:
-        import transformations
-    except ImportError:
-        transformations = None
-        sys.stderr.write("Christoph Gohlke's transformation functions used for testing available from\n")
-        sys.stderr.write("http://www.lfd.uci.edu/~gohlke/code/transformations.py.html\n")
-        sys.stderr.write("e.g.\n$wget http://www.lfd.uci.edu/~gohlke/code/transformations.py\n\n")
-else:
-    transformations = None
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -298,16 +288,6 @@ if __name__ == "__main__":
                                                                     yaw   * 180.0 / pi,
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))
-            if transformations:
-                q = np.array([w, x, y, z], np.float)
-                for axes in ["rzyx", "szyx"]: # r = rotating, s = static
-                    yaw, pitch, roll = transformations.euler_from_quaternion(q, axes)
-                    print("Christoph Gohlke's %s angles %0.2f, %0.2f, %0.2f (radians), "
-                          "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)"
-                          % (axes, yaw, pitch, roll,
-                             yaw   * 180.0 / pi,
-                             pitch * 180.0 / pi,
-                             roll  * 180.0 / pi))
             sleep(1)
     except KeyboardInterrupt:
         print()
