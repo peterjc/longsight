@@ -198,6 +198,10 @@ class GY80(object):
         self.compass = HMC5883L(bus, 0x1e, name="compass")
         self.barometer = BMP085(bus, 0x77, name="barometer")
 
+        self._last_gyro_time = 0 #needed for interpreting gyro
+        self._v_gyro = np.array([0, 0, 0], np.float)
+        self.read_gyro_delta() #Discard first reading
+
         #Cache variable for crude smoothing,
         self._cache = []
         self._max_cache_time = 1.0 #seconds
@@ -207,9 +211,11 @@ class GY80(object):
         t = time()
         v_acc = np.array(self.read_accel(), np.float)
         v_mag = np.array(self.read_compass(), np.float)
+        v_gyro = self.read_gyro_delta() # In radians since last call; already a NumPy array
         self._cache.append((t, v_acc, v_mag))
         #Filter out old entries
         self._cache = [row for row in self._cache if row[0] > (t - self._max_cache_time)]
+        self._v_gyro += v_gyro
         return
 
     def current_smoothed_values(self):
@@ -263,6 +269,29 @@ class GY80(object):
         else:
             return accel.accel_raw_x, accel.accel_raw_y, accel.accel_raw_z
 
+    def read_gyro(self, scaled=True):
+        """Returns an X, Y, Z tuple; If scaled uses radians/second.
+
+        WARNING: Calling this method directly will interfere with the higher-level
+        methods like ``read_gyro_delta`` which integrate the gyroscope readings to
+        track orientation (it will miss out on the rotation reported in this call).
+        """
+        gyro = self.gyro
+        gyro.read_raw_data()
+        if scaled:
+            return gyro.gyro_scaled_x, gyro.gyro_scaled_y, gyro.gyro_scaled_z
+        else:
+            return gyro.gyro_raw_x, gyro.gyro_raw_y, gyro.gyro_raw_z
+
+    def read_gyro_delta(self):
+        """Returns an X, Y, Z tuple - radians since last call."""
+        g = self.gyro
+        t = time()
+        g.read_raw_data()
+        d = np.array([g.gyro_scaled_x, g.gyro_scaled_y, g.gyro_scaled_z], np.float) / (t - self._last_gyro_time)
+        self._last_gyro_time = t
+        return d
+
     def read_compass(self, scaled=True):
         """Returns an X, Y, Z tuple."""
         compass = self.compass
@@ -278,6 +307,7 @@ if __name__ == "__main__":
     imu = GY80()
     try:
         while True:
+            print("Cummulative gyro rotation %0.2f %0.2f %0.2f (radians)" % tuple(imu._v_gyro))
             w, x, y, z = imu.smoothed_orientation_quaternion()
             print("Quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
