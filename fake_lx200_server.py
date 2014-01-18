@@ -121,7 +121,9 @@ def _check_close(a, b, error=0.0001):
 
 def update_alt_az():
     global imu, local_site_magnetic_offset, local_alt, local_az
-    yaw, pitch, roll = imu.current_orientation_euler_angles()
+    #print("Smoothing from %i values" % len(imu._cache))
+    yaw, pitch, roll = imu.smoothed_orientation_euler_angles()
+    #yaw, pitch, roll = imu.current_orientation_euler_angles()
     #Yaw is measured from (magnetic) North, but wrt sensor so -ve
     #Azimuth is measure from true North:
     local_az = (local_site_magnetic_offset - yaw) % (2*pi)
@@ -600,6 +602,7 @@ while True:
         while True:
             data += connection.recv(16)
             if not data:
+                imu.update()
                 break
             #print >>sys.stderr, 'received "%s"' % data
             #For stacked commands like ":RS#:GD#"

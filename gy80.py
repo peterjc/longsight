@@ -36,7 +36,7 @@ pitch is about the Y axis (lateral to right of travel) and yaw is about the Z ax
 from __future__ import print_function
 
 import sys
-from time import sleep
+from time import sleep, time
 from math import pi, sin, cos, asin, acos, atan2, sqrt
 import numpy as np
 import smbus
@@ -171,6 +171,37 @@ _check_close(quaternion_from_euler_angles(pi/2, 0, pi), (0, 0.5*sqrt(2), 0.5*sqr
 #w, x, y, z = quaternion_from_euler_angles(pi, 0, pi)
 #print("quarternion (%0.2f, %0.2f, %0.2f, %0.2f) magnitude %0.2f" % (w, x, y, z, sqrt(w*w + x*x + y*y + z*z)))
 
+def smooth_cache(values):
+    """Returns averaged values from time-stampled list of values.
+
+    Given list of tuples (time stamp, value 1, value 2, ..., value N),
+    will return a tuple of (smoothed 1, smoothed 2, ..., smoothed N)
+    where each value is a consistently sized NumPy array.
+
+    TODO: Weight entries according to time stamp?
+    """
+    count = len(values)
+    N = len(values[0]) - 1 # discount the time stamp
+
+    #Create empty arrays for summation,
+    totals = []
+    for i in range(N):
+        v = values[0][i+1] # offset for time stamp
+        totals.append(np.zeros(v.size, v.dtype))
+
+    for row in values:
+        for i in range(N):
+            totals[i] += row[i+1]
+    
+    return tuple(v / count for v in totals)
+
+#a = np.array([1,2,3], np.float)
+#b = np.array([0.4, 4.0, 4.0], np.float)
+#c = np.array([0,pi,sqrt(2)], np.float)
+#_check_close((a, b, c), smooth_cache([(0, a, b, c)]))
+#_check_close((a, b, c), smooth_cache([(0, a, b, c), (0, a, b, c)]))
+#_check_close((a, b, c), smooth_cache([(0, a, b, c+5), (0, a, b, c-5)]))
+#del a, b, c
 
 class GY80(object):
     def __init__(self, bus=None):
@@ -183,6 +214,30 @@ class GY80(object):
         self.compass = HMC5883L(bus=smbus.SMBus(i2c_bus), address = 0x1e, name="compass")
         self.barometer = BMP085() # Can't set bus as option
 
+        #Cache variable for crude smoothing,
+        self._cache = []
+        self._max_cache_time = 1.0 #seconds
+
+    def update(self):
+        """Read the current sensor values & store them for smoothing. No return value."""
+        t = time()
+        v_acc = np.array(self.read_accel(), np.float)
+        v_mag = np.array(self.read_compass(), np.float)
+        self._cache.append((t, v_acc, v_mag))
+        #Filter out old entries
+        self._cache = [row for row in self._cache if row[0] > (t - self._max_cache_time)]
+        return
+
+    def current_smoothed_values(self):
+        """Read the current sensor values & smooth them with cache.
+
+        Returns a tuple of NumPy arrays: accel, compass
+        """
+        self.update()
+        #Cheat and return new value directly
+        #return np.array(self._cache[-1][1], np.float), np.array(self._cache[-1][2], np.float)
+        return smooth_cache(self._cache)
+
     def current_orientation_quaternion(self):
         """Current orientation using North, East, Down (NED) frame of reference."""
         #Can't use v_mag directly as North since it will usually not be
@@ -191,6 +246,9 @@ class GY80(object):
         #Note assumes starting at rest so only acceleration is gravity.
         v_acc = np.array(self.read_accel(), np.float)
         v_mag = np.array(self.read_compass(), np.float)
+        return self._quaternion_from_acc_mag(v_acc, v_mag)
+
+    def _quaternion_from_acc_mag(self, v_acc, v_mag):
         v_down = v_acc * -1.0 #(sign change depends on sensor design?)
         v_east = np.cross(v_down, v_mag)
         v_north = np.cross(v_east, v_down)
@@ -203,6 +261,14 @@ class GY80(object):
     def current_orientation_euler_angles(self):
         """Current orientation using yaw, pitch, roll (radians) using sensor's frame."""
         return quaternion_to_euler_angles(*self.current_orientation_quaternion())
+
+    def smoothed_orientation_quaternion(self):
+        """Smoothed orientation as a quaternion (NED frame)."""
+        return self._quaternion_from_acc_mag(*self.current_smoothed_values())
+
+    def smoothed_orientation_euler_angles(self):
+        """Smoothed orientation using yaw, pitch, roll (radians) using sensor's frame."""
+        return quaternion_to_euler_angles(*self.smoothed_orientation_quaternion())
 
     def read_accel(self):
         """Returns an X, Y, Z tuple."""
@@ -224,7 +290,7 @@ if __name__ == "__main__":
     imu = GY80()
     try:
         while True:
-            w, x, y, z = imu.current_orientation_quaternion()
+            w, x, y, z = imu.smoothed_orientation_quaternion()
             print("Quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
             print("My function gives Euler angles %0.2f, %0.2f, %0.2f (radians), "
