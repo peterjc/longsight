@@ -109,6 +109,24 @@ _check_close((0, pi/2, 0), quaternion_to_axis_rotations(*quaternion_from_axis_ro
 _check_close((pi/2, 0, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(pi/2, 0, 0)))
 _check_close((1, 2, 3), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(1, 2, 3)))
 
+def quaternion_to_rotation_matrix_rows(w, x, y, z):
+    """Returns a tuple of three rows which make up a 3x3 rotatation matrix.
+
+    It is trival to turn this into a NumPy array/matrix if desired."""
+    x2 = x*x
+    y2 = y*2
+    z2 = z*2
+    row0 = (1 - 2*y2 - 2*z2,
+            2*x*y - 2*w*z,
+            2*x*z + 2*w*y)
+    row1 = (2*x*y + 2*w*z,
+            1 - 2*x2 - 2*z2,
+            2*y*z - 2*w*x)
+    row2 = (2*x*z - 2*w*y,
+            2*y*z + 2*w*x,
+            1 - 2*x2 - 2*y2)
+    return row0, row1, row2
+
 def quaternion_from_rotation_matrix_rows(row0, row1, row2):
     #No point merging three rows into a 3x3 matrix if just want quaternion
     #Based on several sources including the C++ implementation here:
@@ -140,6 +158,15 @@ def quaternion_from_rotation_matrix_rows(row0, row1, row2):
         y = (row1[2] + row2[1]) / S
         z = 0.25 * S
     return w, x, y, z
+
+w, x, y, z = quaternion_from_axis_rotations(pi, 0, 0)
+_check_close(quaternion_from_rotation_matrix_rows(*quaternion_to_rotation_matrix_rows(w, x, y, z)), (w, x, y, z))
+w, x, y, z = quaternion_from_axis_rotations(0, pi, 0)
+_check_close(quaternion_from_rotation_matrix_rows(*quaternion_to_rotation_matrix_rows(w, x, y, z)), (w, x, y, z))
+w, x, y, z = quaternion_from_axis_rotations(0, 0, pi)
+_check_close(quaternion_from_rotation_matrix_rows(*quaternion_to_rotation_matrix_rows(w, x, y, z)), (w, x, y, z))
+w, x, y, z = quaternion_from_axis_rotations(1, 2, 3)
+_check_close(quaternion_from_rotation_matrix_rows(*quaternion_to_rotation_matrix_rows(w, x, y, z)), (w, x, y, z))
 
 #TODO - Double check which angles exactly have I calculated (which frame etc)?
 def quaternion_from_euler_angles(yaw, pitch, roll):
