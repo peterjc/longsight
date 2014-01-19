@@ -73,7 +73,7 @@ def _check_close(a, b, error=0.0001):
 def quaternion_from_axis_rotations(angle_x, angle_y, angle_z):
     """Quaternion from axis-angle rotation representation (in radians).
 
-    e.g. Use the X, Y, Z values from a gryroscope as input.
+    e.g. Use the X, Y, Z values from a gyroscope as input.
     """
     #http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
     speed = sqrt(angle_x*angle_x + angle_y*angle_y + angle_z*angle_z)
@@ -357,7 +357,7 @@ if __name__ == "__main__":
         while True:
             a, b, c = imu._v_gyro
             print("Cummulative gyro rotation %0.2f %0.2f %0.2f (radians)" % (a, b, c))
-            w, x, y, z = quaternion_from_axis_rotations(x, y, z)
+            w, x, y, z = quaternion_from_axis_rotations(a, b, c)
             print("Gyroscope quaternion  (%0.2f, %0.2f, %0.2f, %0.2f) "
                   "from axis rotations  %0.2f %0.2f %0.2f (radians)"
                   % (a, b, c, w, x, y, z))
