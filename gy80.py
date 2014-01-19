@@ -70,6 +70,45 @@ def _check_close(a, b, error=0.0001):
         raise ValueError("%s vs %s, difference %s > %s"
                          % (a, b, diff, error))
 
+def quaternion_from_axis_rotations(angle_x, angle_y, angle_z):
+    """Quaternion from axis-angle rotation representation (in radians).
+
+    e.g. Use the X, Y, Z values from a gryroscope as input.
+    """
+    #http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    speed = sqrt(angle_x*angle_x + angle_y*angle_y + angle_z*angle_z)
+    if speed < 0.000001:
+        return 1, 0, 0, 0
+    #Normalise
+    angle_x /= speed
+    angle_y /= speed
+    angle_z /= speed
+    half_a = speed * 0.5
+    sin_half_a = sin(half_a)
+    return cos(half_a), sin_half_a * cos(angle_x), sin_half_a * cos(angle_y), sin_half_a * cos(angle_z)
+
+def quaternion_to_axis_rotations(w, x, y, z):
+    """Quaternion to three axis-angle rotation representation (in radians)."""
+    half_a = acos(w)
+    speed = half_a * 2
+    sin_half_a = sin(half_a)
+    if sin_half_a:
+        angle_x = acos(x / sin_half_a)
+        angle_y = acos(y / sin_half_a)
+        angle_z = acos(z / sin_half_a)
+        return angle_x * speed, angle_y * speed, angle_z * speed
+    else:
+        return 0.0, 0.0, 0.0
+
+_check_close((0, 0, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(0, 0, 0)))
+_check_close((0, 0, pi), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(0, 0, pi)))
+_check_close((0, pi, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(0, pi, 0)))
+_check_close((pi, 0, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(pi, 0, 0)))
+_check_close((0, 0, pi/2), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(0, 0, pi/2)))
+_check_close((0, pi/2, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(0, pi/2, 0)))
+_check_close((pi/2, 0, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(pi/2, 0, 0)))
+_check_close((1, 2, 3), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(1, 2, 3)))
+
 def quaternion_from_rotation_matrix_rows(row0, row1, row2):
     #No point merging three rows into a 3x3 matrix if just want quaternion
     #Based on several sources including the C++ implementation here:
@@ -316,9 +355,15 @@ if __name__ == "__main__":
           
     try:
         while True:
-            print("Cummulative gyro rotation %0.2f %0.2f %0.2f (radians)" % tuple(imu._v_gyro))
+            a, b, c = imu._v_gyro
+            print("Cummulative gyro rotation %0.2f %0.2f %0.2f (radians)" % (a, b, c))
+            w, x, y, z = quaternion_from_axis_rotations(x, y, z)
+            print("Gyroscope quaternion  (%0.2f, %0.2f, %0.2f, %0.2f) "
+                  "from axis rotations  %0.2f %0.2f %0.2f (radians)"
+                  % (a, b, c, w, x, y, z))
+
             w, x, y, z = imu.smoothed_orientation_quaternion()
-            print("Quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
+            print("Accel/Comp quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
             print("My function gives Euler angles %0.2f, %0.2f, %0.2f (radians), "
                   "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (yaw, pitch, roll,
