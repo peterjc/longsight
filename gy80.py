@@ -20,8 +20,8 @@ to give an absolute orientation or heading. This is provided by the acceleromete
 (more accurately vector magnetometer) tells us the direction of (magnetic) North.
 
 Using the accelerometer and magnetometer/compass alone would give an orientation,
-but will give errors from vibration which can be compensated for by the gryoscope.
-The gryoscope alone is prone to drift, so the combination is much more robust.
+but will give errors from vibration which can be compensated for by the gyroscope.
+The gyroscope alone is prone to drift, so the combination is much more robust.
 
 In aeronautics and also submarines the standard axes convention is North, East, Down
 (NED), while for ground based systems instead East, North, Up (ENU) is used. Most of
@@ -74,6 +74,7 @@ def quaternion_from_rotation_matrix_rows(row0, row1, row2):
     #No point merging three rows into a 3x3 matrix if just want quaternion
     #Based on several sources including the C++ implementation here:
     #http://www.camelsoftware.com/firetail/blog/uncategorized/quaternion-based-ahrs-using-altimu-10-arduino/
+    #http://www.camelsoftware.com/firetail/blog/c/imu-maths/
     trace = row0[0] + row1[1] + row2[2]
     if trace > row2[2]:
         S = sqrt(1.0 + trace) *  2
