@@ -115,7 +115,7 @@ class GY80(object):
 
         #Now update self.current_orientation
         if abs(sqrt(sum(v_acc**2)) - 1) < 0.3:
-            correction_stength = 0.1
+            correction_strength = 0.1
             #Approx 1g, should be stationary, and can use this for down axis...
             v_down = v_acc * -1.0
             v_east = np.cross(v_down, v_mag)
@@ -125,7 +125,7 @@ class GY80(object):
             v_north /= sqrt((v_north**2).sum())
             row0, row1, row2 = quaternion_to_rotation_matrix_rows(*self._current_hybrid_orientation_q)
             correction = np.cross(v_north, row0) + np.cross(v_east, row1) + np.cross(v_down, row2)
-            v_rotation = v_gyro + correction*correction_stength
+            v_rotation = v_gyro + correction*correction_strength
         else:
             #Use just the gyro
             v_rotation = v_gyro
