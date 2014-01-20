@@ -58,8 +58,9 @@ except ImportError:
 from quaternions import _check_close
 from quaternions import quaternion_from_axis_rotations,quaternion_to_axis_rotations
 from quaternions import quaternion_to_rotation_matrix_rows, quaternion_from_rotation_matrix_rows
+from quaternions import quaternion_from_axis_angle
 from quaternions import quaternion_from_euler_angles, quaternion_to_euler_angles
-from quaternions import quaternion_multiply
+from quaternions import quaternion_multiply, quaternion_normalise
 
 
 class GY80(object):
@@ -75,11 +76,10 @@ class GY80(object):
 
         self._last_gyro_time = 0 #needed for interpreting gyro
         self.read_gyro_delta() #Discard first reading
-        self._current_hybrid_orientation_q = self.current_orientation_quaternion_mag_acc_only()
-        self._current_gryo_only_q = self._current_hybrid_orientation_q
-        self._current_gryo_only_v = quaternion_to_axis_rotations(*self._current_gryo_only_q)
-        #TODO - Fix this:
-        #_check_close(self._current_gryo_only_q, quaternion_from_axis_rotations(*self._current_gryo_only_v))
+        q_start = self.current_orientation_quaternion_mag_acc_only()
+        self._current_hybrid_orientation_q = q_start
+        self._current_gyro_only_q = q_start
+        self._current_gyro_only_v = quaternion_to_axis_rotations(*q_start)
 
 
     def update(self):
@@ -95,11 +95,22 @@ class GY80(object):
         self._last_gyro_time = t
 
         #Gyro only vector calculation (expected to drift)
-        self._current_gryo_only_v += v_gyro * delta_t
+        #print("Old gyro only rotation (X=%0.5f Y=%0.5f Z=%0.5f)" % tuple(self._current_gyro_only_v))
+        self._current_gyro_only_v += v_gyro * delta_t
+        self._current_gyro_only_v %= (2*pi)
+        #print("New gyro only rotation (X=%0.5f Y=%0.5f Z=%0.5f)" % tuple(self._current_gyro_only_v))
+
+        #x, y, z = v_gyro
+        #print("Gyro change (X=%0.5f Y=%0.5f Z=%0.5f T=%0.5f)" % (x, y, z, delta_t))
+        #del x, y, z
+        #print("Gyro change (%0.5f %0.f %0.5f %0.5f)" % quaternion_from_axis_rotations(*v_gyro))
+  
 
         #Gyro only quaternion calculation (expected to drift)
-        q_rotation = quaternion_from_axis_rotations(*tuple(v_gyro * delta_t))
-        self._current_gryo_only_q = quaternion_multiply(self._current_gryo_only_q, q_rotation)
+        rot_mag = sqrt(sum(v_gyro**2))
+        v_rotation = v_gyro / rot_mag
+        q_rotation = quaternion_from_axis_angle(v_rotation, rot_mag * delta_t)
+        self._current_gyro_only_q = quaternion_multiply(self._current_gyro_only_q, q_rotation)
 
         #Now update self.current_orientation
         if abs(sqrt(sum(v_acc**2)) - 1) < 0.3:
@@ -117,13 +128,16 @@ class GY80(object):
         else:
             #Use just the gyro
             v_rotation = v_gyro
-
+        #Apply the (possily) correct angular motion...
+        
         #1st order approximation of quaternion for this rotation (v_rotation, delta_t)
         #using small angle approximation, cos(theta) = 1, sin(theta) = theta
-        #w, x, y, z = (1, v_rotation[0] * delta_t/2, v_rotation[1] *delta_t/2, v_rotation[2] * delta/2)
-        q_rotation = quaternion_from_axis_rotations(*tuple(v_rotation * delta_t))
+        #w, x, y, z = (1, v_rotation[0] * delta_t/2, v_rotation[1] *delta_t/2, v_rotation[2] * delta_t/2)
+        #q_rotation = (1, v_rotation[0] * delta_t/2, v_rotation[1] *delta_t/2, v_rotation[2] * delta_t/2)
 
-        #Apply the (possibly corrected) angular motion
+        rot_mag = sqrt(sum(v_rotation**2))
+        v_rotation /= rot_mag
+        q_rotation = quaternion_from_axis_angle(v_rotation, rot_mag * delta_t)
         self._current_hybrid_orientation_q = quaternion_multiply(self._current_hybrid_orientation_q, q_rotation)
 
         return
@@ -223,7 +237,7 @@ if __name__ == "__main__":
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))
 
-            w, x, y, z = quaternion_from_axis_rotations(*imu._current_gryo_only_v)
+            w, x, y, z = quaternion_from_axis_rotations(*imu._current_gyro_only_v)
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
             print("Gyro-only with vector (%0.2f, %0.2f, %0.2f, %0.2f), "
                   "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (w, x, y, z,
@@ -231,7 +245,7 @@ if __name__ == "__main__":
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))            
 
-            w, x, y, z = imu._current_gryo_only_q
+            w, x, y, z = imu._current_gyro_only_q
             #print("Gyro-only quaternion  (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
             print("Gyro-only quaternion  (%0.2f, %0.2f, %0.2f, %0.2f), "
@@ -248,7 +262,7 @@ if __name__ == "__main__":
                                                                     yaw   * 180.0 / pi,
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))
-            sleep(1)
+            sleep(0.25)
     except KeyboardInterrupt:
         print()
         pass
