@@ -22,12 +22,22 @@ def _check_close(a, b, error=0.0001):
         raise ValueError("%s vs %s, difference %s > %s"
                          % (a, b, diff, error))
 
+def quaternion_mgnitude(w, x, y, z):
+    return sqrt(w*w + x*x + y*y + z*z)
+
+def quaternion_normalise(w, x, y, z):
+    mag = sqrt(w*w + x*x + y*y + z*z)
+    return w/mag, x/mag, y/mag, z/mag
+
 def quaternion_from_axis_rotations(angle_x, angle_y, angle_z):
     """Quaternion from axis-angle rotation representation (in radians).
 
     e.g. Use the X, Y, Z values from a gyroscope as input.
     """
     #http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    angle_x = angle_x % (2*pi)
+    angle_y = angle_y % (2*pi)
+    angle_z = angle_z % (2*pi)
     speed = sqrt(angle_x*angle_x + angle_y*angle_y + angle_z*angle_z)
     if speed < 0.000001:
         return 1, 0, 0, 0
@@ -61,14 +71,25 @@ _check_close((0, pi/2, 0), quaternion_to_axis_rotations(*quaternion_from_axis_ro
 _check_close((pi/2, 0, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(pi/2, 0, 0)))
 _check_close((1, 2, 3), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(1, 2, 3)))
 
-#TODO - Fix this...
-#print(quaternion_to_axis_rotations(0,0,0,1))
-#print(quaternion_from_axis_rotations(*quaternion_to_axis_rotations(0,0,0,1)))
-#_check_close((0,0,0,1), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(0,0,0,1)))
-#_check_close((-0.58655456819291307, 0.3349104965197246, 0.37472678876858784, 0.6351130069775921),
-#             quaternion_from_axis_rotations(*quaternion_to_axis_rotations(
-#              -0.58655456819291307, 0.3349104965197246, 0.37472678876858784, 0.6351130069775921)))
+_check_close(quaternion_from_axis_rotations(0.334910, 0.374726, 0.635113),
+             (0.9191202975975377, 0.3607701930128949, 0.3525546624578296, 0.2789234947407001))
+_check_close(quaternion_to_axis_rotations(0.9191202975975377, 0.3607701930128949, 0.3525546624578296, 0.2789234947407001),
+             (0.3349099999999998, 0.37472599999999995, 0.6351130000000001))
 
+
+
+w, x, y, z = quaternion_from_axis_rotations(1, 2, 3)
+_check_close((w, x, y, z), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(w, x, y, z)))
+#w, x, y, z = (-0.58655456819291307, 0.3349104965197246, 0.37472678876858784, 0.6351130069775921)
+#_check_close(sqrt(w*w + x*x + y*y + z*z), 1.0)
+#_check_close((w, x, y, z), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(w, x, y, z)))
+del w, x, y, z
+
+def quaternion_from_axis_angle(vector, theta):
+    sin_half_theta = sin(theta/2)
+    return cos(theta/2), vector[0]*sin_half_theta, vector[1]*sin_half_theta, vector[2]*sin_half_theta
+
+#TODO - Write quaternion_to_axis_angle and cross-validate
 
 def quaternion_to_rotation_matrix_rows(w, x, y, z):
     """Returns a tuple of three rows which make up a 3x3 rotatation matrix.
