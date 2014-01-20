@@ -77,6 +77,7 @@ class GY80(object):
         self._last_gyro_time = 0 #needed for interpreting gyro
         self.read_gyro_delta() #Discard first reading
         q_start = self.current_orientation_quaternion_mag_acc_only()
+        self._q_start = q_start
         self._current_hybrid_orientation_q = q_start
         self._current_gyro_only_q = q_start
         self._current_gyro_only_v = quaternion_to_axis_rotations(*q_start)
@@ -223,7 +224,8 @@ if __name__ == "__main__":
     if abs(g - 1) > 0.3:
         sys.stderr.write("Not starting from rest, acceleration %0.2f\n" % g)
         sys.exit(1)
-          
+    print("Starting q by acc/mag (%0.2f, %0.2f, %0.2f, %0.2f)" % imu._q_start)
+
     try:
         while True:
             print()
