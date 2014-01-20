@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Crude code for quaternions in Python.
 
 TODO - Define a quaternion class?
