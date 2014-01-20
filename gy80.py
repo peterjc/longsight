@@ -109,6 +109,12 @@ _check_close((0, pi/2, 0), quaternion_to_axis_rotations(*quaternion_from_axis_ro
 _check_close((pi/2, 0, 0), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(pi/2, 0, 0)))
 _check_close((1, 2, 3), quaternion_to_axis_rotations(*quaternion_from_axis_rotations(1, 2, 3)))
 
+_check_close((0,0,0,1), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(0,0,0,1)))
+_check_close((-0.58655456819291307, 0.3349104965197246, 0.37472678876858784, 0.6351130069775921),
+             quaternion_from_axis_rotations(*quaternion_to_axis_rotations(
+              -0.58655456819291307, 0.3349104965197246, 0.37472678876858784, 0.6351130069775921)))
+
+
 def quaternion_to_rotation_matrix_rows(w, x, y, z):
     """Returns a tuple of three rows which make up a 3x3 rotatation matrix.
 
@@ -221,6 +227,15 @@ _check_close(quaternion_from_euler_angles(pi/2, 0, pi), (0, 0.5*sqrt(2), 0.5*sqr
 #w, x, y, z = quaternion_from_euler_angles(pi, 0, pi)
 #print("quarternion (%0.2f, %0.2f, %0.2f, %0.2f) magnitude %0.2f" % (w, x, y, z, sqrt(w*w + x*x + y*y + z*z)))
 
+def quaternion_multiply(a, b):
+    a_w, a_x, a_y, a_z = a
+    b_w, b_x, b_y, b_z = b
+    return (a_w*b_w - a_x*b_x - a_y*b_y - a_z*b_z,
+            a_w*b_x + a_x*b_w + a_y*b_z - a_z*b_y,
+            a_w*b_y - a_x*b_z + a_y*b_w + a_z*b_x,
+            a_w*b_z + a_x*b_y - a_y*b_x + a_z*b_w)
+
+_check_close(quaternion_multiply((0, 0, 0, 1), (0, 0, 1, 0)), (0, -1, 0, 0))
 
 class GY80(object):
     def __init__(self, bus=None):
@@ -234,19 +249,64 @@ class GY80(object):
         self.barometer = BMP085(bus, 0x77, name="barometer")
 
         self._last_gyro_time = 0 #needed for interpreting gyro
-        self._v_gyro = np.array([0, 0, 0], np.float)
         self.read_gyro_delta() #Discard first reading
+        self._current_hybrid_orientation_q = self.current_orientation_quaternion_mag_acc_only()
+        self._current_gryo_only_q = self._current_hybrid_orientation_q
+        self._current_gryo_only_v = quaternion_to_axis_rotations(*self._current_gryo_only_q)
+        _check_close(self._current_gryo_only_q, quaternion_from_axis_rotations(*self._current_gryo_only_v))
+
 
     def update(self):
         """Read the current sensor values & store them for smoothing. No return value."""
         t = time()
+        delta_t = t - self._last_gyro_time
+        if delta_t < 0.020:
+            #Want at least 20ms of data
+            return
+        v_gyro = np.array(self.read_gyro(), np.float)
         v_acc = np.array(self.read_accel(), np.float)
         v_mag = np.array(self.read_compass(), np.float)
-        v_gyro = self.read_gyro_delta() # In radians since last call; already a NumPy array
-        self._v_gyro += v_gyro
+        self._last_gyro_time = t
+
+        #Gyro only vector calculation (expected to drift)
+        self._current_gryo_only_v += v_gyro * delta_t
+
+        #Gyro only quaternion calculation (expected to drift)
+        q_rotation = quaternion_from_axis_rotations(*tuple(v_gyro * delta_t))
+        self._current_gryo_only_q = quaternion_multiply(self._current_gryo_only_q, q_rotation)
+
+        #Now update self.current_orientation
+        if abs(sqrt(sum(v_acc**2)) - 1) < 0.3:
+            correction_stength = 0.1
+            #Approx 1g, should be stationary, and can use this for down axis...
+            v_down = v_acc * -1.0
+            v_east = np.cross(v_down, v_mag)
+            v_north = np.cross(v_east, v_down)
+            v_down /= sqrt((v_down**2).sum())
+            v_east /= sqrt((v_east**2).sum())
+            v_north /= sqrt((v_north**2).sum())
+            row0, row1, row2 = quaternion_to_rotation_matrix_rows(*self._current_hybrid_orientation_q)
+            correction = np.cross(v_north, row0) + np.cross(v_east, row1) + np.cross(v_down, row2)
+            v_rotation = v_gyro + correction*correction_stength
+        else:
+            #Use just the gyro
+            v_rotation = v_gyro
+
+        #1st order approximation of quaternion for this rotation (v_rotation, delta_t)
+        #using small angle approximation, cos(theta) = 1, sin(theta) = theta
+        #w, x, y, z = (1, v_rotation[0] * delta_t/2, v_rotation[1] *delta_t/2, v_rotation[2] * delta/2)
+        q_rotation = quaternion_from_axis_rotations(*tuple(v_rotation * delta_t))
+
+        #Apply the (possibly corrected) angular motion
+        self._current_hybrid_orientation_q = quaternion_multiply(self._current_hybrid_orientation_q, q_rotation)
+
         return
 
-    def current_orientation_quaternion(self):
+    def current_orientation_quaternion_hybrid(self):
+        self.update()
+        return self._current_hybrid_orientation_q
+
+    def current_orientation_quaternion_mag_acc_only(self):
         """Current orientation using North, East, Down (NED) frame of reference."""
         #Can't use v_mag directly as North since it will usually not be
         #quite horizontal (requiring tilt compensation), establish this
@@ -268,7 +328,7 @@ class GY80(object):
 
     def current_orientation_euler_angles(self):
         """Current orientation using yaw, pitch, roll (radians) using sensor's frame."""
-        return quaternion_to_euler_angles(*self.current_orientation_quaternion())
+        return quaternion_to_euler_angles(*self._current_hybrid_orientation_q_mag_acc_only())
 
     def read_accel(self, scaled=True):
         """Returns an X, Y, Z tuple; if scaled in units of gravity."""
@@ -326,18 +386,39 @@ if __name__ == "__main__":
           
     try:
         while True:
-            a, b, c = imu._v_gyro
-            print("Cummulative gyro rotation %0.2f %0.2f %0.2f (radians)" % (a, b, c))
-            w, x, y, z = quaternion_from_axis_rotations(a, b, c)
-            print("Gyroscope quaternion  (%0.2f, %0.2f, %0.2f, %0.2f) "
-                  "from axis rotations  %0.2f %0.2f %0.2f (radians)"
-                  % (a, b, c, w, x, y, z))
-
-            w, x, y, z = imu.current_orientation_quaternion()
-            print("Accel/Comp quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
+            print()
+            imu.update()
+            w, x, y, z = imu.current_orientation_quaternion_hybrid()
+            #print("Gyroscope/Accl/Comp q (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
-            print("My function gives Euler angles %0.2f, %0.2f, %0.2f (radians), "
-                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (yaw, pitch, roll,
+            print("Gyroscope/Accl/Comp q (%0.2f, %0.2f, %0.2f, %0.2f), "
+                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (w, x, y, z,
+                                                                    yaw   * 180.0 / pi,
+                                                                    pitch * 180.0 / pi,
+                                                                    roll  * 180.0 / pi))
+
+            w, x, y, z = quaternion_from_axis_rotations(*imu._current_gryo_only_v)
+            yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
+            print("Gyro-only with vector (%0.2f, %0.2f, %0.2f, %0.2f), "
+                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (w, x, y, z,
+                                                                    yaw   * 180.0 / pi,
+                                                                    pitch * 180.0 / pi,
+                                                                    roll  * 180.0 / pi))            
+
+            w, x, y, z = imu._current_gryo_only_q
+            #print("Gyro-only quaternion  (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
+            yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
+            print("Gyro-only quaternion  (%0.2f, %0.2f, %0.2f, %0.2f), "
+                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (w, x, y, z,
+                                                                    yaw   * 180.0 / pi,
+                                                                    pitch * 180.0 / pi,
+                                                                    roll  * 180.0 / pi))
+
+            w, x, y, z = imu.current_orientation_quaternion_mag_acc_only()
+            #print("Accel/Comp quaternion (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
+            yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
+            print("Accel/Comp quaternion (%0.2f, %0.2f, %0.2f, %0.2f), "
+                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (w, x, y, z,
                                                                     yaw   * 180.0 / pi,
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))
