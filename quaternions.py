@@ -35,12 +35,20 @@ def quaternion_from_axis_rotations(angle_x, angle_y, angle_z):
     e.g. Use the X, Y, Z values from a gyroscope as input.
     """
     #http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    #Normalise angles to range -pi to +pi
     angle_x = angle_x % (2*pi)
+    if angle_x > pi:
+        angle_x -= 2*pi
     angle_y = angle_y % (2*pi)
+    if angle_y > pi:
+        angle_y -= 2*pi
     angle_z = angle_z % (2*pi)
+    if angle_z > pi:
+        angle_z -= 2*pi
     speed = sqrt(angle_x*angle_x + angle_y*angle_y + angle_z*angle_z)
     if speed < 0.000001:
         return 1, 0, 0, 0
+    assert speed < 2*pi, "Angle overflow (%0.1f %0.1f %0.1f)" % (angle_x, angle_y, angle_z)
     #Normalise
     angle_x /= speed
     angle_y /= speed
@@ -77,13 +85,34 @@ _check_close(quaternion_to_axis_rotations(0.9191202975975377, 0.3607701930128949
              (0.3349099999999998, 0.37472599999999995, 0.6351130000000001))
 
 
-
-w, x, y, z = quaternion_from_axis_rotations(1, 2, 3)
-_check_close((w, x, y, z), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(w, x, y, z)))
+for a, b, c in [(1, 2, 3),
+                #(-1, 2, 3),
+                #(1, -2, 3),
+                #(1, 2, -3),
+                (4, 3, 2),
+                (6, 1, 1),
+                (5, 4, 3), #fails
+                (6, 5, 4), #fails
+                (1, 6, 1),
+                (1, 2, 5),
+                (1, 2, 6), #fails
+                (1, 1, 6),
+                (4, 1, 4),
+                (5, 1, 5), #fails
+                (6, 1, 6), #fails,
+                ]:
+    w, x, y, z = quaternion_from_axis_rotations(a, b, c)
+    if a > pi: a -= 2*pi
+    if b > pi: b -= 2*pi
+    if c > pi: c -= 2*pi
+    _check_close((w, x, y, z), quaternion_from_axis_rotations(a, b, c))
+    a, b, c = abs(a), abs(b), abs(c) #TODO - fix loss of sign
+    _check_close((a, b, c), quaternion_to_axis_rotations(w, x, y, z))
+    _check_close((w, x, y, z), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(w, x, y, z)))
 #w, x, y, z = (-0.58655456819291307, 0.3349104965197246, 0.37472678876858784, 0.6351130069775921)
 #_check_close(sqrt(w*w + x*x + y*y + z*z), 1.0)
 #_check_close((w, x, y, z), quaternion_from_axis_rotations(*quaternion_to_axis_rotations(w, x, y, z)))
-del w, x, y, z
+del w, x, y, z, a, b, c
 
 def quaternion_from_axis_angle(vector, theta):
     sin_half_theta = sin(theta/2)
@@ -149,6 +178,7 @@ w, x, y, z = quaternion_from_axis_rotations(0, 0, pi)
 _check_close(quaternion_from_rotation_matrix_rows(*quaternion_to_rotation_matrix_rows(w, x, y, z)), (w, x, y, z))
 w, x, y, z = quaternion_from_axis_rotations(1, 2, 3)
 _check_close(quaternion_from_rotation_matrix_rows(*quaternion_to_rotation_matrix_rows(w, x, y, z)), (w, x, y, z))
+
 
 #TODO - Double check which angles exactly have I calculated (which frame etc)?
 def quaternion_from_euler_angles(yaw, pitch, roll):
