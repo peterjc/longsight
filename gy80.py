@@ -56,7 +56,6 @@ except ImportError:
 
 #Local imports
 from quaternions import _check_close
-from quaternions import quaternion_from_axis_rotations,quaternion_to_axis_rotations
 from quaternions import quaternion_to_rotation_matrix_rows, quaternion_from_rotation_matrix_rows
 from quaternions import quaternion_from_axis_angle
 from quaternions import quaternion_from_euler_angles, quaternion_to_euler_angles
@@ -80,8 +79,6 @@ class GY80(object):
         self._q_start = q_start
         self._current_hybrid_orientation_q = q_start
         self._current_gyro_only_q = q_start
-        self._current_gyro_only_v = quaternion_to_axis_rotations(*q_start)
-
 
     def update(self):
         """Read the current sensor values & store them for smoothing. No return value."""
@@ -94,18 +91,6 @@ class GY80(object):
         v_acc = np.array(self.read_accel(), np.float)
         v_mag = np.array(self.read_compass(), np.float)
         self._last_gyro_time = t
-
-        #Gyro only vector calculation (expected to drift)
-        #print("Old gyro only rotation (X=%0.5f Y=%0.5f Z=%0.5f)" % tuple(self._current_gyro_only_v))
-        self._current_gyro_only_v += v_gyro * delta_t
-        self._current_gyro_only_v %= (2*pi)
-        #print("New gyro only rotation (X=%0.5f Y=%0.5f Z=%0.5f)" % tuple(self._current_gyro_only_v))
-
-        #x, y, z = v_gyro
-        #print("Gyro change (X=%0.5f Y=%0.5f Z=%0.5f T=%0.5f)" % (x, y, z, delta_t))
-        #del x, y, z
-        #print("Gyro change (%0.5f %0.f %0.5f %0.5f)" % quaternion_from_axis_rotations(*v_gyro))
-  
 
         #Gyro only quaternion calculation (expected to drift)
         rot_mag = sqrt(sum(v_gyro**2))
@@ -238,14 +223,6 @@ if __name__ == "__main__":
                                                                     yaw   * 180.0 / pi,
                                                                     pitch * 180.0 / pi,
                                                                     roll  * 180.0 / pi))
-
-            w, x, y, z = quaternion_from_axis_rotations(*imu._current_gyro_only_v)
-            yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
-            print("Gyro-only with vector (%0.2f, %0.2f, %0.2f, %0.2f), "
-                  "yaw %0.1f, pitch %0.2f, roll %0.1f (degrees)" % (w, x, y, z,
-                                                                    yaw   * 180.0 / pi,
-                                                                    pitch * 180.0 / pi,
-                                                                    roll  * 180.0 / pi))            
 
             w, x, y, z = imu._current_gyro_only_q
             #print("Gyro-only quaternion  (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
