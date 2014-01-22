@@ -97,10 +97,9 @@ class GY80(object):
         v_rotation = v_gyro / rot_mag
         q_rotation = quaternion_from_axis_angle(v_rotation, rot_mag * delta_t)
         self._current_gyro_only_q = quaternion_multiply(self._current_gyro_only_q, q_rotation)
+        self._current_hybrid_orientation_q = quaternion_multiply(self._current_hybrid_orientation_q, q_rotation)
 
-        #Now update self.current_orientation
         if abs(sqrt(sum(v_acc**2)) - 1) < 0.3:
-            correction_strength = 0.1
             #Approx 1g, should be stationary, and can use this for down axis...
             v_down = v_acc * -1.0
             v_east = np.cross(v_down, v_mag)
@@ -108,27 +107,22 @@ class GY80(object):
             v_down /= sqrt((v_down**2).sum())
             v_east /= sqrt((v_east**2).sum())
             v_north /= sqrt((v_north**2).sum())
-            row0, row1, row2 = quaternion_to_rotation_matrix_rows(*self._current_hybrid_orientation_q)
-            correction = np.cross(v_north, row0) + np.cross(v_east, row1) + np.cross(v_down, row2)
-            v_rotation = v_gyro + correction*correction_strength
-        else:
-            #Use just the gyro
-            v_rotation = v_gyro
-        #Apply the (possily) correct angular motion...
-        
+            #Complementary Filter
+            #Combine (noisy) orientation from acc/mag, 2%
+            #with (drifting) orientation from gyro, 98%
+            q_mag_acc = quaternion_from_rotation_matrix_rows(v_north, v_east, v_down)
+            self._current_hybrid_orientation_q = tuple(0.02*a + 0.98*b for a, b in
+                                                       zip(q_mag_acc, self._current_hybrid_orientation_q))
+
+
         #1st order approximation of quaternion for this rotation (v_rotation, delta_t)
         #using small angle approximation, cos(theta) = 1, sin(theta) = theta
         #w, x, y, z = (1, v_rotation[0] * delta_t/2, v_rotation[1] *delta_t/2, v_rotation[2] * delta_t/2)
         #q_rotation = (1, v_rotation[0] * delta_t/2, v_rotation[1] *delta_t/2, v_rotation[2] * delta_t/2)
-
-        rot_mag = sqrt(sum(v_rotation**2))
-        v_rotation /= rot_mag
-        q_rotation = quaternion_from_axis_angle(v_rotation, rot_mag * delta_t)
-        self._current_hybrid_orientation_q = quaternion_multiply(self._current_hybrid_orientation_q, q_rotation)
-
         return
 
     def current_orientation_quaternion_hybrid(self):
+        """Current orientation using North, East, Down (NED) frame of reference."""
         self.update()
         return self._current_hybrid_orientation_q
 
@@ -152,9 +146,13 @@ class GY80(object):
         v_north /= sqrt((v_north ** 2).sum())
         return quaternion_from_rotation_matrix_rows(v_north, v_east, v_down)
 
-    def current_orientation_euler_angles(self):
+    def current_orientation_euler_angles_hybrid(self):
         """Current orientation using yaw, pitch, roll (radians) using sensor's frame."""
-        return quaternion_to_euler_angles(*self._current_hybrid_orientation_q_mag_acc_only())
+        return quaternion_to_euler_angles(*self.current_orientation_quaternion_hybrid())
+
+    def current_orientation_euler_angles_mag_acc_only(self):
+        """Current orientation using yaw, pitch, roll (radians) using sensor's frame."""
+        return quaternion_to_euler_angles(*self.current_orientation_quaternion_mag_acc_only())
 
     def read_accel(self, scaled=True):
         """Returns an X, Y, Z tuple; if scaled in units of gravity."""
@@ -215,7 +213,8 @@ if __name__ == "__main__":
         while True:
             print()
             imu.update()
-            w, x, y, z = imu.current_orientation_quaternion_hybrid()
+            #w, x, y, z = imu.current_orientation_quaternion_hybrid()
+            w, x, y, z = imu._current_hybrid_orientation_q
             #print("Gyroscope/Accl/Comp q (%0.2f, %0.2f, %0.2f, %0.2f)" % (w, x, y, z))
             yaw, pitch, roll = quaternion_to_euler_angles(w, x, y, z)
             print("Gyroscope/Accl/Comp q (%0.2f, %0.2f, %0.2f, %0.2f), "
