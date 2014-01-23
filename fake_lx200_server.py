@@ -104,6 +104,9 @@ local_az = 30 * pi / 180.0
 target_ra = 0.0
 target_dec = 0.0
 
+#Turn on for lots of logging...
+debug = False
+
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
         assert isinstance(b, (tuple, list))
@@ -204,7 +207,6 @@ gst = greenwich_sidereal_time_in_radians()
 for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
     for dec in [-0.49*pi, -1.1, -1, 0, 0.001, 1.55, 0.49*pi]:
         alt, az = equatorial_to_alt_az(ra, dec, gst)
-        #print ra, dec, alt, az
         _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
 del gst, ra, dec
 
@@ -368,8 +370,9 @@ def get_telescope_de():
     """
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
-    sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
-                     % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
+    if debug:
+        sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
+                         % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
     if high_precision:
         return radians_to_sddmmss(dec)
     else:
@@ -588,7 +591,7 @@ command_map = {
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (server_name, server_port)
-print >>sys.stderr, 'starting up on %s port %s' % server_address
+sys.stderr.write("Starting up on %s port %s\n" % server_address)
 sock.bind(server_address)
 sock.listen(1)
 
@@ -603,10 +606,9 @@ while True:
             if not data:
                 imu.update()
                 break
-            #print >>sys.stderr, 'received "%s"' % data
             #For stacked commands like ":RS#:GD#"
             if data[0] != ":":
-                sys.stderr.write("Invalid command: %s" % data)
+                sys.stderr.write("Invalid command: %s\n" % data)
                 data = ""
                 break
             while "#" in data:
@@ -616,15 +618,18 @@ while True:
                 cmd, value = cmd[:2], cmd[2:]
                 if cmd in command_map:
                     if value:
-                        print "Command %r, argument %r" % (cmd, value)
+                        if debug:
+                            sys.stdout.write("Command %r, argument %r" % (cmd, value))
                         resp = command_map[cmd](value)
                     else:
                         resp = command_map[cmd]()
                     if resp:
-                        sys.stdout.write("Command %s, sending %s\n" % (cmd, resp))
+                        if debug:
+                            sys.stdout.write("Command %s, sending %s\n" % (cmd, resp))
                         connection.sendall(resp)
                     else:
-                        sys.stdout.write("Command %s, no response\n" % cmd)
+                        if debug:
+                            sys.stdout.write("Command %s, no response\n" % cmd)
                 else:
                     if value:
                         sys.stderr.write("Unknown command: %s %s\n" % (cmd, value))
