@@ -218,13 +218,16 @@ def cm_sync():
     Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
     """
     #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
+    global local_site_magnetic_offset
     global local_alt, local_az, target_alt, target_dec
     sys.stderr.write("Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     sys.stderr.write("New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
                      (radians_to_hhmmss(target_ra), target_ra, radians_to_sddmmss(target_dec), target_dec))
-    #TODO - Calculate/update calibration instead
-    local_alt, local_az = equatorial_to_alt_az(target_ra, target_dec)
+    #TODO - Calculate/update calibration, for now adjust magnetic offset
+    target_alt, target_az = equatorial_to_alt_az(target_ra, target_dec)
+    local_site_magnetic_offset += (target_az - local_az)
+    update_alt_az()
     sys.stderr.write("Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     return "M31 EX GAL MAG 3.5 SZ178.0'"
