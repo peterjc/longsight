@@ -148,3 +148,7 @@ def quaternion_multiply(a, b):
             a_w*b_z + a_x*b_y - a_y*b_x + a_z*b_w)
 
 _check_close(quaternion_multiply((0, 0, 0, 1), (0, 0, 1, 0)), (0, -1, 0, 0))
+
+def quaternion_scalar_multiply(q, s):
+    w, x, y, z = q
+    return (w*s, x*s, y*s, z*q)
