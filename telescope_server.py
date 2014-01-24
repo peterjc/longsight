@@ -210,7 +210,7 @@ for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
         _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
 del gst, ra, dec
 
-def cm_sync():
+def meade_lx200_cmd_CM_sync():
     """For the :CM# command, Synchronizes the telescope's position with the currently selected database object's coordinates.
 
     Returns:
@@ -232,7 +232,7 @@ def cm_sync():
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     return "M31 EX GAL MAG 3.5 SZ178.0'"
 
-def move_to_target():
+def meade_lx200_cmd_MS_move_to_target():
     """For the :MS# command, Slew to Target Object
 
     Returns:
@@ -349,7 +349,7 @@ for r in [0, 0.01, 0.1, pi, 2*pi]:
     _check_close(parse_hhmm(radians_to_hhmmss(r).rstrip("#")), r)
 
 
-def get_telescope_ra():
+def meade_lx200_cmd_GR_get_ra():
     """For the :GR# command, Get Telescope RA
 
     Returns: HH:MM.T# or HH:MM:SS#
@@ -365,7 +365,7 @@ def get_telescope_ra():
         #http://www.manualslib.com/manual/295083/Meade-Lx200.html?page=55
         return radians_to_hhmmt(ra)
 
-def get_telescope_de():
+def meade_lx200_cmd_GD_get_dec():
     """For the :GD# command, Get Telescope Declination.
 
     Returns: sDD*MM# or sDD*MM'SS#
@@ -381,7 +381,7 @@ def get_telescope_de():
     else:
         return radians_to_sddmm(dec)
 
-def set_target_ra(value):
+def meade_lx200_cmd_Sr_set_target_ra(value):
     """For the commands :SrHH:MM.T# or :SrHH:MM:SS#
 
     Set target object RA to HH:MM.T or HH:MM:SS depending on the current precision setting.
@@ -396,7 +396,7 @@ def set_target_ra(value):
         sys.stderr.write("Error parsing right-ascension :Sr%s# command: %s\n" % (value, err))
         return "0"
 
-def set_target_de(value):
+def meade_lx200_cmd_Sd_set_target_de(value):
     """For the command :SdsDD*MM# or :SdsDD*MM:SS#
 
     Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
@@ -411,7 +411,7 @@ def set_target_de(value):
         sys.stderr.write("Error parsing declination :Sd%s# command: %s\n" % (value, err))
         return "0"
 
-def precision_toggle():
+def meade_lx200_cmd_U_precision_toggle():
     """For the :U# command, Toggle between low/hi precision positions
     
     Low - RA displays and messages HH:MM.T sDD*MM
@@ -427,7 +427,7 @@ def precision_toggle():
         sys.stderr.write("Toggled high precision, now OFF.\n")
     return None
 
-def set_site_latitude(value):
+def meade_lx200_cmd_St_set_latitude(value):
     """For the :StsDD*MM# command, Sets the current site latitdue to sDD*MM
 
     Returns: 0 - Invalid, 1 - Valid
@@ -441,7 +441,7 @@ def set_site_latitude(value):
         sys.stderr.write("Error with :St%s# latitude: %s\n" % (value, err))
         return "0"
 
-def set_site_longitude(value):
+def meade_lx200_cmd_Sg_set_longitude(value):
     """For the :SgDDD*MM# command, Set current site longitude to DDD*MM
 
     Returns: 0 - Invalid, 1 - Valid
@@ -458,7 +458,7 @@ def set_site_longitude(value):
         sys.stderr.write("Error with :Sg%s# longitude: %s\n" % (value, err))
         return "0"
 
-def set_site_timezone(value):
+def meade_lx200_cmd_SG_set_local_timezone(value):
     """For the :SGsHH.H# command, Set the number of hours added to local time to yield UTC
 
     Returns: 0 - Invalid, 1 - Valid
@@ -474,7 +474,7 @@ def set_site_timezone(value):
         sys.stderr.write("Error with :SG%s# time zone: %s\n" % (value, err))
         return "0"
 
-def set_site_localtime(value):
+def meade_lx200_cmd_SL_set_local_time(value):
     """For the :SLHH:MM:SS# command, Set the local Time
 
     Returns: 0 - Invalid, 1 - Valid
@@ -504,7 +504,7 @@ def set_site_localtime(value):
         sys.stderr.write("Error with :SL%s# time setting: %s\n" % (value, err))
         return "0"
 
-def set_site_calendar(value):
+def meade_lx200_cmd_SC_set_local_date(value):
     """For the :SCMM/DD/YY# command, Change Handbox Date to MM/DD/YY
 
     Returns: <D><string>
@@ -563,14 +563,14 @@ def return_none(value=None):
 
 
 command_map = {
-    "CM": cm_sync,
-    "GD": get_telescope_de,
-    "GR": get_telescope_ra,
+    "CM": meade_lx200_cmd_CM_sync,
+    "GD": meade_lx200_cmd_GD_get_dec,
+    "GR": meade_lx200_cmd_GR_get_ra,
     "Me": return_none, #start moving East
     "Mn": return_none, #start moving North
     "Ms": return_none, #start moving South
     "Mw": return_none, #start moving West
-    "MS": move_to_target,
+    "MS": meade_lx200_cmd_MS_move_to_target,
     "Q": return_none, #abort all current slewing
     "Qe": return_none, #abort slew East
     "Qn": return_none, #abort slew North
@@ -580,15 +580,15 @@ command_map = {
     "RG": return_none, #set slew rate to guiding (slowest)
     "RM": return_none, #set slew rate to find (2nd fastest)
     "RS": return_none, #set Slew rate to max (fastest)
-    "Sd": set_target_de,
-    "Sr": set_target_ra,
-    "St": set_site_latitude,
-    "Sg": set_site_longitude,
+    "Sd": meade_lx200_cmd_Sd_set_target_de,
+    "Sr": meade_lx200_cmd_Sr_set_target_ra,
+    "St": meade_lx200_cmd_St_set_latitude,
+    "Sg": meade_lx200_cmd_Sg_set_longitude,
     "Sw": return_one, #set max slew rate
-    "SG": set_site_timezone,
-    "SL": set_site_localtime,
-    "SC": set_site_calendar,
-    "U": precision_toggle,
+    "SG": meade_lx200_cmd_SG_set_local_timezone,
+    "SL": meade_lx200_cmd_SL_set_local_time,
+    "SC": meade_lx200_cmd_SC_set_local_date,
+    "U":  meade_lx200_cmd_U_precision_toggle,
 }
 
 # Create a TCP/IP socket
