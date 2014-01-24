@@ -611,7 +611,7 @@ while True:
                 break
             #For stacked commands like ":RS#:GD#"
             if data[0] != ":":
-                sys.stderr.write("Invalid command: %s\n" % data)
+                sys.stderr.write("Invalid command: %r\n" % data)
                 data = ""
                 break
             while "#" in data:
