@@ -247,9 +247,8 @@ def meade_lx200_cmd_MS_move_to_target():
     #SkySafari's "goto" command sends this after a pair of :Sr# and :Sd# commands.
     #For return code 1 and 2 the error message is not shown, simply that the
     #target is below the horizon (1) or out of reach of the mount (2).
-    update_alt_az()
-    ra, dec = alt_az_to_equatorial(local_alt, local_az)
-    if dec < 0:
+    global target_ra, target_dec
+    if target_dec < 0:
         return "1Target declination negative"
     else:
         return "2Sorry, no goto"
@@ -612,7 +611,7 @@ def nexstar_cmd_r_goto_ra_dec_precise(value):
     e.g. r34AB0500,12CE0500
     """
     global target_ra, target_dec
-    target_ra,target_dec = (int(v,16)*2*pi/4294967296 for v in value.split(","))
+    target_ra, target_dec = (int(v,16)*2*pi/4294967296 for v in value.split(","))
     return "#"
 
 def nexstar_cmd_M_cancel_goto():
