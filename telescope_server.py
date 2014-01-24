@@ -210,6 +210,10 @@ for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
         _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
 del gst, ra, dec
 
+# ====================
+# Meade LX200 Protocol
+# ==================== 
+
 def meade_lx200_cmd_CM_sync():
     """For the :CM# command, Synchronizes the telescope's position with the currently selected database object's coordinates.
 
@@ -561,34 +565,74 @@ def return_none(value=None):
 # :FS# Set Focus speed to slowest - Returns: Nothing
 # :F<n># set focuser speed to <n> where <n> is 1..4 - Returns: Nothing
 
+# ==========================
+# Celestron NexStar Protocol
+# ==========================
+
+def nexstar_cmd_V_version():
+    """NexStar command V, version query, returns v1.2"""
+    return chr(1) + chr(2) + "#"
+
+def nexstar_cmd_E_get_ra_dec():
+    """Nexstar command E, get RA/Dec.
+
+    Returns integers in hex, fraction of 65536.
+    """
+    update_alt_az()
+    ra, dec = alt_az_to_equatorial(local_alt, local_az)
+    #Convert from radians to fraction of 65536
+    ra = int((65536*ra) / (2*pi))
+    dec = int((65536*dec) / (2*pi))
+    return "%04X,%04X#" % (ra, dec)
+
+def nexstar_cmd_e_get_ra_dec_precise():
+    """Nexstar command e, get precise RA/Dec.
+
+    Returns integers in hex, fraction of 4294967296.
+    """
+    update_alt_az()
+    ra, dec = alt_az_to_equatorial(local_alt, local_az)
+    #Convert from radians to fraction of 4294967296
+    ra = int((4294967296*ra) / (2*pi))
+    dec = int((4294967296*dec) / (2*pi))
+    return "%08X,%08X#"% (ra, dec)
+
+# ================
+# Main Server Code
+# ================
 
 command_map = {
-    "CM": meade_lx200_cmd_CM_sync,
-    "GD": meade_lx200_cmd_GD_get_dec,
-    "GR": meade_lx200_cmd_GR_get_ra,
-    "Me": return_none, #start moving East
-    "Mn": return_none, #start moving North
-    "Ms": return_none, #start moving South
-    "Mw": return_none, #start moving West
-    "MS": meade_lx200_cmd_MS_move_to_target,
-    "Q": return_none, #abort all current slewing
-    "Qe": return_none, #abort slew East
-    "Qn": return_none, #abort slew North
-    "Qs": return_none, #abort slew South
-    "Qw": return_none, #abort slew West
-    "RC": return_none, #set slew rate to centering (2nd slowest)
-    "RG": return_none, #set slew rate to guiding (slowest)
-    "RM": return_none, #set slew rate to find (2nd fastest)
-    "RS": return_none, #set Slew rate to max (fastest)
-    "Sd": meade_lx200_cmd_Sd_set_target_de,
-    "Sr": meade_lx200_cmd_Sr_set_target_ra,
-    "St": meade_lx200_cmd_St_set_latitude,
-    "Sg": meade_lx200_cmd_Sg_set_longitude,
-    "Sw": return_one, #set max slew rate
-    "SG": meade_lx200_cmd_SG_set_local_timezone,
-    "SL": meade_lx200_cmd_SL_set_local_time,
-    "SC": meade_lx200_cmd_SC_set_local_date,
-    "U":  meade_lx200_cmd_U_precision_toggle,
+    #Meade LX200 commands:
+    ":CM": meade_lx200_cmd_CM_sync,
+    ":GD": meade_lx200_cmd_GD_get_dec,
+    ":GR": meade_lx200_cmd_GR_get_ra,
+    ":Me": return_none, #start moving East
+    ":Mn": return_none, #start moving North
+    ":Ms": return_none, #start moving South
+    ":Mw": return_none, #start moving West
+    ":MS": meade_lx200_cmd_MS_move_to_target,
+    ":Q": return_none, #abort all current slewing
+    ":Qe": return_none, #abort slew East
+    ":Qn": return_none, #abort slew North
+    ":Qs": return_none, #abort slew South
+    ":Qw": return_none, #abort slew West
+    ":RC": return_none, #set slew rate to centering (2nd slowest)
+    ":RG": return_none, #set slew rate to guiding (slowest)
+    ":RM": return_none, #set slew rate to find (2nd fastest)
+    ":RS": return_none, #set Slew rate to max (fastest)
+    ":Sd": meade_lx200_cmd_Sd_set_target_de,
+    ":Sr": meade_lx200_cmd_Sr_set_target_ra,
+    ":St": meade_lx200_cmd_St_set_latitude,
+    ":Sg": meade_lx200_cmd_Sg_set_longitude,
+    ":Sw": return_one, #set max slew rate
+    ":SG": meade_lx200_cmd_SG_set_local_timezone,
+    ":SL": meade_lx200_cmd_SL_set_local_time,
+    ":SC": meade_lx200_cmd_SC_set_local_date,
+    ":U":  meade_lx200_cmd_U_precision_toggle,
+    #Celestron NexStar Communication Protocol
+    "V": nexstar_cmd_V_version,
+    "E": nexstar_cmd_E_get_ra_dec,
+    "e": nexstar_cmd_e_get_ra_dec_precise,
 }
 
 # Create a TCP/IP socket
@@ -609,34 +653,35 @@ while True:
             if not data:
                 imu.update()
                 break
-            #For stacked commands like ":RS#:GD#"
-            if data[0] != ":":
-                sys.stderr.write("Invalid command: %r\n" % data)
-                data = ""
-                break
-            while "#" in data:
-                cmd = data[1:data.index("#")]
-                #print "%r --> %r" % (data, cmd)
-                data = data[1+len(cmd)+1:]
-                cmd, value = cmd[:2], cmd[2:]
+            if debug:
+                sys.stdout.write("Processing %r\n" % data)
+            #For stacked commands like ":RS#:GD#",
+            #but also lone NexStar ones like "e"
+            while data:
+                if "#" in data:
+                    raw_cmd = data[:data.index("#")]
+                    #print "%r --> %r" % (data, cmd)
+                    data = data[len(raw_cmd)+1:]
+                    cmd, value = raw_cmd[:3], raw_cmd[3:]
+                else:
+                    cmd = raw_cmd = data
+                    value = ""
+                    data = ""
                 if cmd in command_map:
                     if value:
                         if debug:
-                            sys.stdout.write("Command %r, argument %r" % (cmd, value))
+                            sys.stdout.write("Command %r, argument %r\n" % (cmd, value))
                         resp = command_map[cmd](value)
                     else:
                         resp = command_map[cmd]()
                     if resp:
                         if debug:
-                            sys.stdout.write("Command %s, sending %s\n" % (cmd, resp))
+                            sys.stdout.write("Command %r, sending %r\n" % (cmd, resp))
                         connection.sendall(resp)
                     else:
                         if debug:
-                            sys.stdout.write("Command %s, no response\n" % cmd)
+                            sys.stdout.write("Command %r, no response\n" % cmd)
                 else:
-                    if value:
-                        sys.stderr.write("Unknown command: %s %s\n" % (cmd, value))
-                    else:
-                        sys.stderr.write("Unknown command: %s\n" % cmd)
+                    sys.stderr.write("Unknown command: %r\n" % raw_cmd)
     finally:
         connection.close()
