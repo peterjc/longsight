@@ -597,6 +597,35 @@ def nexstar_cmd_e_get_ra_dec_precise():
     dec = int((4294967296*dec) / (2*pi))
     return "%08X,%08X#"% (ra, dec)
 
+def nexstar_cmd_R_goto_ra_dec(value):
+    """Nexstar command R, goto RA/Dec
+
+    e.g R34AB,12CE
+    """
+    global target_ra, target_dec
+    target_ra, target_dec = (int(v,16)*2*pi/65536 for v in value.split(","))
+    return "#"
+
+def nexstar_cmd_r_goto_ra_dec_precise(value):
+    """Nexstar command r, goto RA/Dec
+
+    e.g. r34AB0500,12CE0500
+    """
+    global target_ra, target_dec
+    target_ra,target_dec = (int(v,16)*2*pi/4294967296 for v in value.split(","))
+    return "#"
+
+def nexstar_cmd_M_cancel_goto():
+    """Nextstar command M, cancel goto (stop moving)"""
+    return "#"
+
+def nexstar_cmd_P_passthrough(value):
+    """Nexstar command P, pass-though to motor, GPS, etc.
+
+    Used for the slew commands (which we don't support).
+    """
+    return "ERROR#"
+
 # ================
 # Main Server Code
 # ================
@@ -633,6 +662,10 @@ command_map = {
     "V": nexstar_cmd_V_version,
     "E": nexstar_cmd_E_get_ra_dec,
     "e": nexstar_cmd_e_get_ra_dec_precise,
+    "R": nexstar_cmd_R_goto_ra_dec,
+    "r": nexstar_cmd_r_goto_ra_dec_precise,
+    "M": nexstar_cmd_M_cancel_goto,
+    "P": nexstar_cmd_P_passthrough,
 }
 
 # Create a TCP/IP socket
@@ -664,8 +697,9 @@ while True:
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
-                    cmd = raw_cmd = data
-                    value = ""
+                    raw_cmd = data
+                    cmd = raw_cmd[0:1]
+                    value = raw_cmd[1:]
                     data = ""
                 if cmd in command_map:
                     if value:
