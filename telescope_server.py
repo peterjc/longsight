@@ -454,7 +454,7 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     global local_site
     try:
         local_site.longitude = coords.AngularCoordinate(value.replace("*", "d"))
-        sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fdf\n"
+        sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n"
                          % (local_site.latitude.d, local_site.longitude.d))
         return "1"
     except Exception as err:
