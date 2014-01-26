@@ -675,11 +675,11 @@ sock.bind(server_address)
 sock.listen(1)
 
 while True:
-    #sys.stdout.write("waiting for a connection\n")
+    sys.stdout.write("waiting for a connection\n")
     connection, client_address = sock.accept()
     data = ""
     try:
-        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
+        sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
             data += connection.recv(16)
             if not data:
@@ -690,9 +690,16 @@ while True:
             #For stacked commands like ":RS#:GD#",
             #but also lone NexStar ones like "e"
             while data:
+                while data[0:1] == "#":
+                    #Stellarium seems to send '#:GR#' and '#:GD#'
+                    #(perhaps to explicitly close and prior command?)
+                    #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
+                    data = data[1:]
+                if not data:
+                    break
                 if "#" in data:
                     raw_cmd = data[:data.index("#")]
-                    #print "%r --> %r" % (data, cmd)
+                    #sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
@@ -700,7 +707,9 @@ while True:
                     cmd = raw_cmd[0:1]
                     value = raw_cmd[1:]
                     data = ""
-                if cmd in command_map:
+                if not cmd:
+                    sys.stderr.write("Eh? No command?\n")
+                elif cmd in command_map:
                     if value:
                         if debug:
                             sys.stdout.write("Command %r, argument %r\n" % (cmd, value))
