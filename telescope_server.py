@@ -105,7 +105,7 @@ target_ra = 0.0
 target_dec = 0.0
 
 #Turn on for lots of logging...
-debug = False
+debug = True #False
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -273,7 +273,11 @@ _check_close(parse_hhmm("12:00:00"), pi)
 def parse_sddmm(value):
     """Turn string sDD*MM or sDD*MM:SS into radians."""
     if value[3] != "*":
-        raise ValueError("Bad format %r" % value)
+        if len(value) == 9 and value[3] == chr(223) and value[6] == ":":
+            # Stellarium's variant
+            value = value.replace(chr(223), "*")
+        else:
+            raise ValueError("Bad format %r" % value)
     if value[0] == "+":
         sign = +1
     elif value[0] == "-":
@@ -389,10 +393,13 @@ def meade_lx200_cmd_Sr_set_target_ra(value):
 
     Set target object RA to HH:MM.T or HH:MM:SS depending on the current precision setting.
     Returns: 0 - Invalid, 1 - Valid
+
+    Stellarium breaks the specification and sends things like ':Sr 20:39:38#'
+    with an extra space.
     """
     global target_ra
     try:
-        target_ra = parse_hhmm(value)
+        target_ra = parse_hhmm(value.strip()) # Remove any space added by Stellarium
         sys.stderr.write("Parsed right-ascension :Sr%s# command as %0.5f radians\n" % (value, target_ra))
         return "1"
     except Exception as err:
@@ -404,10 +411,14 @@ def meade_lx200_cmd_Sd_set_target_de(value):
 
     Set target object declination to sDD*MM or sDD*MM:SS depending on the current precision setting
     Returns: 1 - Dec Accepted, 0 - Dec invalid
+
+    Stellarium breaks this specification and sends things like ':Sd +15\xdf54:44#'
+    with an extra space, and the wrong characters. Apparently chr(223) is the
+    degrees symbol on some character sets.
     """
     global target_dec
     try:
-        target_dec = parse_sddmm(value)
+        target_dec = parse_sddmm(value.strip()) # Remove any space added by Stellarium
         sys.stderr.write("Parsed declination :Sd%s# command as %0.5f radians\n" % (value, target_dec))
         return "1"
     except Exception as err:
@@ -675,11 +686,15 @@ sock.bind(server_address)
 sock.listen(1)
 
 while True:
-    sys.stdout.write("waiting for a connection\n")
+    # SkySafari v4.0.1 continously opens and closed the connection,
+    # while Stellarium via socat opens it and keeps it open using:
+    # $ ./socat GOPEN:/dev/ptyp0,ignoreeof TCP:raspberrypi8:4030
+    # (probably socat which is maintaining the link)
+    #sys.stdout.write("waiting for a connection\n")
     connection, client_address = sock.accept()
     data = ""
     try:
-        sys.stdout.write("Client connected: %s, %s\n" % client_address)
+        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
             data += connection.recv(16)
             if not data:
@@ -703,9 +718,11 @@ while True:
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
+                    #This will break on complex NexStar commands,
+                    #but don't care - Meade LX200 is the prority.
                     raw_cmd = data
-                    cmd = raw_cmd[0:1]
-                    value = raw_cmd[1:]
+                    cmd = raw_cmd[:3]
+                    value = raw_cmd[3:]
                     data = ""
                 if not cmd:
                     sys.stderr.write("Eh? No command?\n")
@@ -724,6 +741,6 @@ while True:
                         if debug:
                             sys.stdout.write("Command %r, no response\n" % cmd)
                 else:
-                    sys.stderr.write("Unknown command: %r\n" % raw_cmd)
+                    sys.stderr.write("Unknown command %r, from %r (data %r)\n" % (cmd, raw_cmd, data))
     finally:
         connection.close()
