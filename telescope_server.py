@@ -274,7 +274,9 @@ def parse_sddmm(value):
     """Turn string sDD*MM or sDD*MM:SS into radians."""
     if value[3] != "*":
         if len(value) == 9 and value[3] == chr(223) and value[6] == ":":
-            # Stellarium's variant
+            # Stellarium's variant in v0.12.4, since fixed:
+            # https://bugs.launchpad.net/stellarium/+bug/1272960
+            # http://bazaar.launchpad.net/~stellarium/stellarium/trunk/revision/6529
             value = value.replace(chr(223), "*")
         else:
             raise ValueError("Bad format %r" % value)
@@ -400,6 +402,8 @@ def meade_lx200_cmd_Sr_set_target_ra(value):
     global target_ra
     try:
         target_ra = parse_hhmm(value.strip()) # Remove any space added by Stellarium
+        # The extra space sent by Stellarium v0.12.4 has been fixed:
+        # https://bugs.launchpad.net/stellarium/+bug/1272960
         sys.stderr.write("Parsed right-ascension :Sr%s# command as %0.5f radians\n" % (value, target_ra))
         return "1"
     except Exception as err:
@@ -419,6 +423,8 @@ def meade_lx200_cmd_Sd_set_target_de(value):
     global target_dec
     try:
         target_dec = parse_sddmm(value.strip()) # Remove any space added by Stellarium
+        # The extra space sent by Stellarium v0.12.4 has been fixed:
+        # https://bugs.launchpad.net/stellarium/+bug/1272960 
         sys.stderr.write("Parsed declination :Sd%s# command as %0.5f radians\n" % (value, target_dec))
         return "1"
     except Exception as err:
