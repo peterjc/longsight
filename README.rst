@@ -7,7 +7,8 @@ driver issues.
 Currently looking at integrating an I2C orientation sensor
 via a Raspberry Pi to mimic a computerised "Goto" telescope
 mount using the Meade LX200 protocol, in order to track where
-a telescope is pointing via client software like Sky Safari.
+a telescope is pointing via client software like Sky Safari:
+http://astrobeano.blogspot.co.uk/2014/01/instrumented-telescope-with-raspberry.html
 
 Potential medium/long term ambitions may
 include doing image alignment/registration and stacking -
