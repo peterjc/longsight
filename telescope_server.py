@@ -10,14 +10,16 @@ SkySafari applications can talk to this server as if it was an off
 the shelf Meade LX200 compatible "Go To" telescope, when in fact
 it is a DIY intrumented telescope or simulation.
 
-Testing with Sky Safari Plus v4.0, where the telescope is setup as follows:
+See http://astrobeano.blogspot.co.uk/2014/01/instrumented-telescope-with-raspberry.html
 
-Scope Type: Meade LX-200 Classic
-Mount Type: Equatorial Push-To
+Testing with Sky Safari Plus v4.0, with the telescope usually setup as:
+
+Scope Type: Meade LX-200 GPS
+Mount Type: Equatorial Push-To (or any push to setting)
 Auto-Detect SkyFi: Off
 IP Address: That of the computer running this script (default 10.0.0.1)
-Port Number: 4030
-Set Time & Location: Off (default)
+Port Number: 4030 (default)
+Set Time & Location: On (default is off)
 Readout Rate: 4 per second (default)
 Save Log File: Off (default)
 
@@ -30,24 +32,28 @@ The "Align" button gives an are you sure prompt with the currently
 selected objects name (e.g. a star), and then sends its position
 using the Sr and Sd commands, followed by the :CM# command.
 
-The "Lock/Unlock" button appears to work, I need to start returning
-a non-static position to test this.
+The "Lock/Unlock" button controls if SkySafari automatically pans
+the display to keep the reported telescope direction centered.
 
 If configured as a Goto telescope, additional left/right and up/down
 buttons appear on screen (which send East/West, North/South movement
 commands. Also, a slew rate slider control appears. Depending on which
 model telescope was selected, this may give four rates via the
-RC/RG/RM/RS commands, or Sw commands (range 2 to 8).
+RC/RG/RM/RS commands, or Sw commands (in the range 2 to 8).
 
 If SkySafari's "Set Time & Location" feature is selected, it will
 send commands St and Sg (for the location) then SG, SL, SC to set
 the time and date. If using "Meade LX-200 Classic" this imposes
 a 15s delay, using a newer model like the "Meade LX-200 GPS" there
 is no noticeable delay on connection.
+
+Additional limited testing also done with the Celestron NexStar
+protocol, although SkySafari 4 does not seem to use its built in
+commands for setting the date/time or location, nor the synching
+commands for alignment.
 """
 
-#TODO: Alt/Az horizontal coordinates to equatorial, using local site's
-#location and time. See e.g.
+#More references on Alt/Az horizontal coordinates to equatorial:
 #http://pythonhosted.org/Astropysics/coremods/obstools.html#astropysics.obstools.Site
 #https://github.com/eteq/astropysics/issues/21
 #https://github.com/astropy/astropy-api/pull/6
