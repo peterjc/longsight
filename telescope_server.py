@@ -111,7 +111,7 @@ target_ra = 0.0
 target_dec = 0.0
 
 #Turn on for lots of logging...
-debug = True #False
+debug = False
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
