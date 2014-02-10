@@ -82,6 +82,7 @@ server_name = socket.gethostbyname(socket.gethostname())
 if server_name.startswith("127.0."): #e.g. 127.0.0.1
     #This works on Linux but not on Mac OS X or Windows:
     server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
+#server_name = "10.0.0.1" #Override for wifi access
 server_port = 4030 #Default port used by SkySafari
 
 #If default to low precision, SkySafari turns it on anyway:
