@@ -132,13 +132,13 @@ def update_alt_az():
     global imu, local_site_magnetic_offset, local_alt, local_az
     yaw, pitch, roll = imu.current_orientation_euler_angles_hybrid()
     #yaw, pitch, roll = imu.current_orientation_euler_angles_mag_acc_only()
-    #Yaw is measured from (magnetic) North, but wrt sensor so -ve
+    #Yaw is measured from (magnetic) North,
     #Azimuth is measure from true North:
-    local_az = (local_site_magnetic_offset - yaw) % (2*pi)
+    local_az = (local_site_magnetic_offset + yaw) % (2*pi)
     #Pitch is measured downwards (using airplane style NED system)
     #Altitude is measured upwards
     local_alt = pitch
-    #We don't care about the pitch for the Meade LX200 protocol.
+    #We don't care about the roll for the Meade LX200 protocol.
 
 def site_time_gmt_as_epoch():
     global local_time_offset
