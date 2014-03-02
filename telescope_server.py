@@ -60,6 +60,7 @@ commands for alignment.
 #http://infohost.nmt.edu/tcc/help/lang/python/examples/sidereal/ims/
 
 import socket
+import os
 import sys
 import commands
 try:
@@ -76,6 +77,12 @@ from astropysics import obstools
 
 #Local import
 from gy80 import GY80
+
+if not os.path.isfile("telescope_server.ini"):
+    print("Using default settings")
+    h = open("telescope_server.ini", "w")
+    h.write("[server]\nname=10.0.0.1\nport=4030\n")
+    h.close()
 
 print("Connecting to sensors...")
 imu = GY80()
