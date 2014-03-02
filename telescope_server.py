@@ -85,6 +85,8 @@ if not os.path.isfile(config_file):
     h.write("[server]\nname=10.0.0.1\nport=4030\n")
     #Default to Greenwich as the site
     h.write("[site]\nlatitude=+51d28m38s\nlongitude=0\n")
+    #Default to no correction of the angles
+    h.write("[offsets]\nazimuth=0\naltitude=0\n")
     h.close()
 
 print("Connecting to sensors...")
@@ -119,11 +121,13 @@ local_time_offset = 0
 #For Greenwich, magnetic north is estimated to be 2 deg 40 min west
 #of grid north at Greenwich in July 2013.
 #http://www.geomag.bgs.ac.uk/data_service/models_compass/gma_calc.html
-local_site_magnetic_offset = -2.67 * pi / 180.0
+#local_site_magnetic_offset = -2.67 * pi / 180.0
 
 #These will come from sensor information... storing them in radians
 local_alt = 85 * pi / 180.0
 local_az = 30 * pi / 180.0
+offset_alt = config.getfloat("offsets", "altitude")
+offset_az = config.getfloat("offsets", "azimuth")
 
 #These will come from the client... store them in radians
 target_ra = 0.0
@@ -153,15 +157,15 @@ def _check_close(a, b, error=0.0001):
                          % (a, b, diff, error))
 
 def update_alt_az():
-    global imu, local_site_magnetic_offset, local_alt, local_az
+    global imu, offset_alt, offset_az, local_alt, local_az
     yaw, pitch, roll = imu.current_orientation_euler_angles_hybrid()
     #yaw, pitch, roll = imu.current_orientation_euler_angles_mag_acc_only()
     #Yaw is measured from (magnetic) North,
     #Azimuth is measure from true North:
-    local_az = (local_site_magnetic_offset + yaw) % (2*pi)
+    local_az = (offset_az + yaw) % (2*pi)
     #Pitch is measured downwards (using airplane style NED system)
     #Altitude is measured upwards
-    local_alt = pitch
+    local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
 
 def site_time_gmt_as_epoch():
@@ -252,15 +256,20 @@ def meade_lx200_cmd_CM_sync():
     Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
     """
     #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
-    global local_site_magnetic_offset
+    global offset_alt, offset_az
     global local_alt, local_az, target_alt, target_dec
     sys.stderr.write("Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     sys.stderr.write("New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
                      (radians_to_hhmmss(target_ra), target_ra, radians_to_sddmmss(target_dec), target_dec))
-    #TODO - Calculate/update calibration, for now adjust magnetic offset
     target_alt, target_az = equatorial_to_alt_az(target_ra, target_dec)
-    local_site_magnetic_offset += (target_az - local_az)
+    offset_alt += (target_alt - local_alt)
+    offset_az += (target_az - local_az)
+    offset_alt %= 2*pi
+    offset_az %= 2*pi
+    config.set("offsets", "altitude", offset_alt)
+    config.set("offsets", "azimuth", offset_az)
+    save_config()
     update_alt_az()
     sys.stderr.write("Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
