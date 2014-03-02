@@ -78,7 +78,8 @@ from astropysics import obstools
 #Local import
 from gy80 import GY80
 
-if not os.path.isfile("telescope_server.ini"):
+config_file = "telescope_server.ini"
+if not os.path.isfile(config_file):
     print("Using default settings")
     h = open("telescope_server.ini", "w")
     h.write("[server]\nname=10.0.0.1\nport=4030\n")
@@ -130,6 +131,11 @@ target_dec = 0.0
 
 #Turn on for lots of logging...
 debug = False
+
+def save_config():
+    global condig, config_file
+    with open(config_file, "w") as handle:
+        config.write(handle)
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -477,9 +483,12 @@ def meade_lx200_cmd_St_set_latitude(value):
     Returns: 0 - Invalid, 1 - Valid
     """
     #Expect this to be followed by an Sg command to set the longitude...
-    global local_site
+    global local_site, config
     try:
-        local_site.latitude = coords.AngularCoordinate(value.replace("*", "d"))
+        value = value.replace("*", "d")
+        local_site.latitude = coords.AngularCoordinate(value)
+        #That worked, should be safe to save the value to disk later...
+        config.set("site", "latitude", value)
         return "1"
     except Exception as err:
         sys.stderr.write("Error with :St%s# latitude: %s\n" % (value, err))
@@ -492,11 +501,15 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     """
     #Expected immediately after the set latitude command
     #e.g. :St+56*29# then :Sg003*08'#
-    global local_site
+    global local_site, config
     try:
-        local_site.longitude = coords.AngularCoordinate(value.replace("*", "d"))
+        value = value.replace("*", "d")
+        local_site.longitude = coords.AngularCoordinate(value)
         sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n"
                          % (local_site.latitude.d, local_site.longitude.d))
+        #That worked, should be safe to save the value to disk:
+        config.set("site", "longitude", value)
+        save_config()
         return "1"
     except Exception as err:
         sys.stderr.write("Error with :Sg%s# longitude: %s\n" % (value, err))
