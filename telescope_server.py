@@ -82,6 +82,8 @@ if not os.path.isfile("telescope_server.ini"):
     print("Using default settings")
     h = open("telescope_server.ini", "w")
     h.write("[server]\nname=10.0.0.1\nport=4030\n")
+    #Default to Greenwich as the site
+    h.write("[site]\nlatitude=+51d28m38s\nlongitude=0\n")
     h.close()
 
 print("Connecting to sensors...")
@@ -104,8 +106,8 @@ server_port = config.getint("server", "port") #e.g. 4030
 high_precision = True
 
 #Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
-local_site = obstools.Site(coords.AngularCoordinate("+51d28m38s"),
-                           coords.AngularCoordinate(0),
+local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude")),
+                           coords.AngularCoordinate(config.get("site", "longitude")),
                            tz=0)
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
