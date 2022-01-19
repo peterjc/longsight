@@ -62,7 +62,7 @@ commands for alignment.
 import socket
 import os
 import sys
-import commands
+import subprocess
 try:
     import configparser
 except ImportError:
@@ -72,8 +72,8 @@ import datetime
 from math import pi, sin, cos, asin, acos, atan2, modf
 
 #TODO - Try astropy if I can get it to compile on Mac OS X...
-from astropysics import coords
-from astropysics import obstools
+from astropy import coordinates
+from astropy import obstools
 
 #Local import
 from gy80 import GY80
@@ -118,8 +118,8 @@ local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude
 local_time_offset = 0
 
 #This will probably best be inferred by calibration...
-#For Greenwich, magnetic north is estimated to be 2 deg 40 min west
-#of grid north at Greenwich in July 2013.
+#For Greenwich, magnetic north is estimated to be 1 deg 27 min west
+#of grid north at Greenwich in July 2021.
 #http://www.geomag.bgs.ac.uk/data_service/models_compass/gma_calc.html
 #local_site_magnetic_offset = -2.67 * pi / 180.0
 
