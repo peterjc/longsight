@@ -24,7 +24,7 @@ from quaternions import quaternion_multiply, quaternion_normalise
 class MPU9250(object):
     def __init__(self, bus=None):
 
-        self.MPU9250(
+        mpu = MPU9250(
             address_ak=AK8963_ADDRESS, 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
             address_mpu_slave=None, 
@@ -34,7 +34,7 @@ class MPU9250(object):
             mfs=AK8963_BIT_16, 
             mode=AK8963_MODE_C100HZ)
 
-        self.configure()
+        mpu.configure()
 
         self._last_gyro_time = 0 #needed for interpreting gyro
         self.read_gyro_delta() #Discard first reading
