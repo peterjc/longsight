@@ -24,6 +24,7 @@ from quaternions import quaternion_multiply, quaternion_normalise
 class GYMOD(object):
     def __init__(self, bus=None):
 
+        """
         self = MPU9250(
             address_ak=AK8963_ADDRESS, 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
@@ -33,11 +34,12 @@ class GYMOD(object):
             afs=AFS_8G, 
             mfs=AK8963_BIT_16, 
             mode=AK8963_MODE_C100HZ)
-
+        """    
+        self.address_ak=AK8963_ADDRESS
         self.configure()
 
         self._last_gyro_time = 0 #needed for interpreting gyro
-        #self.read_gyro_delta() #Discard first reading
+        self.read_gyro_delta() #Discard first reading
         q_start = self.current_orientation_quaternion_mag_acc_only()
         self._q_start = q_start
         self._current_hybrid_orientation_q = q_start
