@@ -75,7 +75,7 @@ obstime = Time('2010-01-01T20:00') + np.linspace(0, 6, 10000) * u.hour
 location = location = EarthLocation.of_address('Greenwich')
 frame = AltAz(obstime=obstime, location=location)
 # Is this the same as the old obstools.Site?
-local_site = frame
+local_site = location
 
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
