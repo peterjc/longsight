@@ -143,13 +143,13 @@ class GYMOD(object):
         """Returns an X, Y, Z tuple - radians since last call."""
         t = time.time()
         g = mpu.readGyroscopeMaster()
-        d = np.array([g.gyro_scaled_x, g.gyro_scaled_y, g.gyro_scaled_z], np.float) / (t - self._last_gyro_time)
+        d = np.array([g['x'], g['y'], g['z'], np.float) / (t - self._last_gyro_time)
         self._last_gyro_time = t
         return d
 
     def read_compass(self, scaled=True):
         """Returns an X, Y, Z tuple."""
-        compass = self
+        compass = mpu
         compass.readMagnetometerMaster()
         if scaled:
             return compass.scaled_x, compass.scaled_y, compass.scaled_z
