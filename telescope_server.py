@@ -207,7 +207,9 @@ def equatorial_to_alt_az(gst=None):
     return alt, az % (2*pi)
     """
     location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
-    obs_time = Time()
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    obs_time = Time(current_time)
     alt_az_frame = AltAz(location=location, obstime=obs_time) 
     return alt_az_frame
 #This test implicitly assumes time between two calculations not significant:
@@ -222,6 +224,8 @@ for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
         #alt, az = equatorial_to_alt_az(ra, dec, gst)
         altaz = equatorial_to_alt_az(gst)
         #_check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
+
+        #t.sidereal_time('apparent', 'greenwich') 
 del gst, ra, dec
 
 # ====================
