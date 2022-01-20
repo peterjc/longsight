@@ -72,7 +72,7 @@ high_precision = True
 #                           coords.AngularCoordinate(config.get("site", "longitude")),
 #                           tz=0)
 obstime = Time('2010-01-01T20:00') + np.linspace(0, 6, 10000) * u.hour
-location = location = EarthLocation(config.get("site", "longitude") * u.deg, config.get("site", "latitude") * u.deg, height=2200 * u.m)
+location = location = EarthLocation.of_address('Greenwich')
 frame = AltAz(obstime=obstime, location=location)
 # Is this the same as the old obstools.Site?
 local_site = frame
