@@ -118,12 +118,11 @@ class GYMOD(object):
 
     def read_accel(self, scaled=True):
         """Returns an X, Y, Z tuple; if scaled in units of gravity."""
-        accel = self
-        accel.readAccelerometerMaster()
+        accel = mpu.readAccelerometerMaster()
         if scaled:
-            return accel.accel_scaled_x, accel.accel_scaled_y, accel.accel_scaled_z
+            return accel[0], accel[1], accel[2]
         else:
-            return accel.accel_raw_x, accel.accel_raw_y, accel.accel_raw_z
+            return accel[0], accel[1], accel[2]
 
     def read_gyro(self, scaled=True):
         """Returns an X, Y, Z tuple; If scaled uses radians/second.
@@ -132,29 +131,27 @@ class GYMOD(object):
         methods like ``read_gyro_delta`` which integrate the gyroscope readings to
         track orientation (it will miss out on the rotation reported in this call).
         """
-        gyro = self
-        gyro.readGyroscopeMaster()
+        gyro = mpu.readGyroscopeMaster()
         if scaled:
-            return gyro.gyro_scaled_x, gyro.gyro_scaled_y, gyro.gyro_scaled_z
+            return gyro[0], gyro[1], gyro[2]
         else:
-            return gyro.gyro_raw_x, gyro.gyro_raw_y, gyro.gyro_raw_z
+            return gyro[0], gyro[1], gyro[2]
 
     def read_gyro_delta(self):
         """Returns an X, Y, Z tuple - radians since last call."""
         t = time.time()
-        g = mpu.readGyroscopeMaster()
-        d = np.array(int(g['x']), int(g['y']), int(g['z']), np.float) / (t - self._last_gyro_time)
+        gyro = mpu.readGyroscopeMaster()
+        d = np.array(gyro[0], gyro[1], gyro[2], np.float) / (t - self._last_gyro_time)
         self._last_gyro_time = t
         return d
 
     def read_compass(self, scaled=True):
         """Returns an X, Y, Z tuple."""
-        compass = mpu
-        compass.readMagnetometerMaster()
+        compass = mpu.readMagnetometerMaster()
         if scaled:
-            return compass.scaled_x, compass.scaled_y, compass.scaled_z
+            return compass[0], compass[1], compass[2]
         else:
-            return compass.raw_x, compass.raw_y, compass.raw_z
+            return compass[0], compass[1], compass[2]
 
 
 if __name__ == "__main__":
