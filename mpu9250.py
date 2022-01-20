@@ -37,7 +37,7 @@ class GYMOD(object):
         self.configure()
 
         self._last_gyro_time = 0 #needed for interpreting gyro
-        self.read_gyro_delta() #Discard first reading
+        #self.read_gyro_delta() #Discard first reading
         q_start = self.current_orientation_quaternion_mag_acc_only()
         self._q_start = q_start
         self._current_hybrid_orientation_q = q_start
