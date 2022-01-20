@@ -141,10 +141,9 @@ class GYMOD(object):
 
     def read_gyro_delta(self):
         """Returns an X, Y, Z tuple - radians since last call."""
-        g = self
         t = time.time()
-        g.readGyroscopeMaster()
-        d = np.array([g.gyro_scaled_x, g.gyro_scaled_y, g.gyro_scaled_z], np.float) / (t - self._last_gyro_time)
+        self.readGyroscopeMaster()
+        d = np.array([self.gyro_scaled_x, self.gyro_scaled_y, self.gyro_scaled_z], np.float) / (t - self._last_gyro_time)
         self._last_gyro_time = t
         return d
 
