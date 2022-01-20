@@ -185,10 +185,12 @@ def alt_az_to_equatorial(alt, az, gst=None):
     ra = gst - local_site.lon.value - hours_in_rad
     return ra % (pi*2), dec
 
-def equatorial_to_alt_az(ra, dec, gst=None):
+#def equatorial_to_alt_az(ra, dec, gst=None):
+def equatorial_to_alt_az(gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
+    """
     #lat = local_site.latitude.r
     lat = local_site.lat
     #Calculate these once only for speed
@@ -203,6 +205,11 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
     az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
     return alt, az % (2*pi)
+    """
+    location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
+    obs_time = time.Time()
+    alt_az_frame = AltAz(location=location, obstime=obs_time) 
+    return alt_az_frame
 #This test implicitly assumes time between two calculations not significant:
 #_check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
 #_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
@@ -212,8 +219,9 @@ def equatorial_to_alt_az(ra, dec, gst=None):
 gst = greenwich_sidereal_time_in_radians()
 for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
     for dec in [-0.49*pi, -1.1, -1, 0, 0.001, 1.55, 0.49*pi]:
-        alt, az = equatorial_to_alt_az(ra, dec, gst)
-        _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
+        #alt, az = equatorial_to_alt_az(ra, dec, gst)
+        altaz = equatorial_to_alt_az(gst)
+        #_check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
 del gst, ra, dec
 
 # ====================
