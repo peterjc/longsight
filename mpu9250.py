@@ -143,7 +143,7 @@ class GYMOD(object):
         """Returns an X, Y, Z tuple - radians since last call."""
         t = time.time()
         g = mpu.readGyroscopeMaster()
-        d = np.array([g['x'], g['y'], g['z'], np.float) / (t - self._last_gyro_time)
+        d = np.array(g['x'], g['y'], g['z'], np.float) / (t - self._last_gyro_time)
         self._last_gyro_time = t
         return d
 
