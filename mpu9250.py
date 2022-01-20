@@ -21,7 +21,7 @@ from quaternions import quaternion_from_axis_angle
 from quaternions import quaternion_from_euler_angles, quaternion_to_euler_angles
 from quaternions import quaternion_multiply, quaternion_normalise
 
-class MPU9250(object):
+class GYMOD(object):
     def __init__(self, bus=None):
 
         self = MPU9250(
@@ -161,7 +161,7 @@ class MPU9250(object):
 
 if __name__ == "__main__":
     print("Starting...")
-    imu = MPU9250()
+    imu = GYMOD()
 
     #Sanity test:
     x, y, z = imu.read_accel()
