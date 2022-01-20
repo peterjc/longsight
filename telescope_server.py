@@ -189,26 +189,20 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    """
     #lat = local_site.latitude.r
-    lat = local_site.lat.value
+    lat = local_site.lat
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
     sin_dec = sin(dec)
     cos_dec = cos(dec)
     #h = gst - local_site.longitude.r - ra
-    h = gst - local_site.lon - ra
+    h = gst - local_site.lon
     sin_h = sin(h)
     cos_h = cos(h)
     alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
     az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
     return alt, az % (2*pi)
-    """
-    location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
-    obs_time = Time()
-    alt_az_frame = AltAz(location=location, obstime=obs_time) 
-    return alt_az_frame
 #This test implicitly assumes time between two calculations not significant:
 #_check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
 #_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
