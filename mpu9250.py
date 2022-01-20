@@ -120,7 +120,7 @@ class GYMOD(object):
     def read_accel(self, scaled=True):
         """Returns an X, Y, Z tuple; if scaled in units of gravity."""
         accel = self.accel
-        accel.read_raw_data()
+        accel.readAccelerometerMaster()
         if scaled:
             return accel.accel_scaled_x, accel.accel_scaled_y, accel.accel_scaled_z
         else:
@@ -134,7 +134,7 @@ class GYMOD(object):
         track orientation (it will miss out on the rotation reported in this call).
         """
         gyro = self.gyro
-        gyro.read_raw_data()
+        gyro.readGyroscopeMaster()
         if scaled:
             return gyro.gyro_scaled_x, gyro.gyro_scaled_y, gyro.gyro_scaled_z
         else:
@@ -144,7 +144,7 @@ class GYMOD(object):
         """Returns an X, Y, Z tuple - radians since last call."""
         g = self.gyro
         t = time()
-        g.read_raw_data()
+        g.readGyroscopeMaster()
         d = np.array([g.gyro_scaled_x, g.gyro_scaled_y, g.gyro_scaled_z], np.float) / (t - self._last_gyro_time)
         self._last_gyro_time = t
         return d
@@ -152,7 +152,7 @@ class GYMOD(object):
     def read_compass(self, scaled=True):
         """Returns an X, Y, Z tuple."""
         compass = self.compass
-        compass.read_raw_data()
+        compass.readMagnetometerMaster()
         if scaled:
             return compass.scaled_x, compass.scaled_y, compass.scaled_z
         else:
