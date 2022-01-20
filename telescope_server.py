@@ -35,7 +35,7 @@ from astropy import units as u
 import numpy as np
 
 #Local import
-from gy80 import GY80
+from mpu9250 import MPU9250
 
 config_file = "telescope_server.ini"
 if not os.path.isfile(config_file):
@@ -49,7 +49,7 @@ if not os.path.isfile(config_file):
     h.close()
 
 print("Connecting to sensors...")
-imu = GY80()
+imu = MPU9250()
 print("Connected to MPU9250 sensor")
 
 print("Opening network port...")

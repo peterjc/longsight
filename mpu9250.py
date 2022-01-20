@@ -1,57 +1,17 @@
 #!/usr/bin/env python
-"""Code for talking to an GY-80 sensor chip via I2C, intended for use on Raspberry Pi.
-
-The GY-80 is a tiny orientation sensor chip with nine degrees of freedom (9-DOF,
-from 3-DOF each for the accelerometer, compass and gyroscope) plus a barometer
-which means it gets marketed as a ten dgree of freedom (10-DOF) sensor. Chips:
-
-- HMC5883L (3-Axis Digital Compass / vector magnetometer), I2C Address 0x1E
-- ADXL345 (3-Axis Digital Accelerometer), I2C Address 0x53
-- L3G4200D (3-Axis Angular Rate Sensor / Gyro), I2C Address 0x69
-- BMP085 (Barometric Pressure / Temperature Sensor), I2C Address 0x77
-
-For my notes on how to connect this to a Raspberry Pi, including the wiring and the
-system configuration hanges and some useful I2C software, see:
-http://astrobeano.blogspot.com/2014/01/gy-80-orientation-sensor-on-raspberry-pi.html
-
-Gyroscopes can track rotation of the sensor, but need an external point of reference
-to give an absolute orientation or heading. This is provided by the accelerometer
-(when at rest this tells us which way is down due to gravity), and the compass or
-(more accurately vector magnetometer) tells us the direction of (magnetic) North.
-
-Using the accelerometer and magnetometer/compass alone would give an orientation,
-but will give errors from vibration which can be compensated for by the gyroscope.
-The gyroscope alone is prone to drift, so the combination is much more robust.
-
-In aeronautics and also submarines the standard axes convention is North, East, Down
-(NED), while for ground based systems instead East, North, Up (ENU) is used. Most of
-the online example code I've found is for remote control planes and gyrocopters and
-therefore used NED. This does the same (even though I have a ground based project).
-
-Rotation angles in both aeronautics and nautical terminology can be defined relative
-to the local frame of reference: pitch is about the X axis (direction of travel),
-pitch is about the Y axis (lateral to right of travel) and yaw is about the Z axis
-(down).
-"""
 from __future__ import print_function
 
 import sys
 from time import sleep, time
 from math import pi, sin, cos, asin, acos, atan2, sqrt
 import numpy as np
-import smbus
 
 try:
-    from adxl345 import ADXL345
-    from hmc5883l import HMC5883L
-    from bmp085 import BMP085
-    from l3g4200d import L3G4200D
-    from i2cutils import i2c_raspberry_pi_bus_number
+    import time
+    from mpu9250_jmdev.registers import *
+    from mpu9250_jmdev.mpu_9250 import MPU9250
 except ImportError:
-    sys.stderr.write("Ensure adxl345.py, hmc5883l.py bmp085.py, l3g4200d.py and i2cutils.py are present and importable\n")
-    sys.stderr.write("\nSee the following links, tweak the i2cutils import inside hmc58831.py etc:\n")
-    sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/sensors/hmc5883l.py\n")
-    sys.stderr.write("https://github.com/bitify/raspi/blob/master/i2c-sensors/bitify/python/utils/i2cutils.py\n")
+    sys.stderr.write("Ensure mpu9250_jmdev is present and importable\n")
     sys.exit(1)
 
 #Local imports
@@ -61,17 +21,20 @@ from quaternions import quaternion_from_axis_angle
 from quaternions import quaternion_from_euler_angles, quaternion_to_euler_angles
 from quaternions import quaternion_multiply, quaternion_normalise
 
+class MPU9250(object):
+    def __init__(self):
 
-class GY80(object):
-    def __init__(self, bus=None):
-        if bus is None:
-            bus = smbus.SMBus(i2c_raspberry_pi_bus_number())
+        mpu = MPU9250(
+            address_ak=AK8963_ADDRESS, 
+            address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
+            address_mpu_slave=None, 
+            bus=1,
+            gfs=GFS_1000, 
+            afs=AFS_8G, 
+            mfs=AK8963_BIT_16, 
+            mode=AK8963_MODE_C100HZ)
 
-        #Default ADXL345 range +/- 2g is ideal for telescope use
-        self.accel = ADXL345(bus, 0x53, name="accel")
-        self.gyro = L3G4200D(bus, 0x69, name="gyro")
-        self.compass = HMC5883L(bus, 0x1e, name="compass")
-        self.barometer = BMP085(bus, 0x77, name="barometer")
+        mpu.configure()
 
         self._last_gyro_time = 0 #needed for interpreting gyro
         self.read_gyro_delta() #Discard first reading
@@ -198,7 +161,7 @@ class GY80(object):
 
 if __name__ == "__main__":
     print("Starting...")
-    imu = GY80()
+    imu = MPU9250()
 
     #Sanity test:
     x, y, z = imu.read_accel()
