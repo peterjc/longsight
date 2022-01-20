@@ -62,7 +62,7 @@ commands for alignment.
 import socket
 import os
 import sys
-import commands
+import subprocess
 try:
     import configparser
 except ImportError:
@@ -72,8 +72,9 @@ import datetime
 from math import pi, sin, cos, asin, acos, atan2, modf
 
 #TODO - Try astropy if I can get it to compile on Mac OS X...
-from astropysics import coords
-from astropysics import obstools
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+#from astropy import obstools
 
 #Local import
 from gy80 import GY80
@@ -109,17 +110,21 @@ server_port = config.getint("server", "port") #e.g. 4030
 high_precision = True
 
 #Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
-local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude")),
-                           coords.AngularCoordinate(config.get("site", "longitude")),
+#local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude")),
+#                           coords.AngularCoordinate(config.get("site", "longitude")),
+#                           tz=0)
+local_site = obstools.Site(SkyCoord(config.get("site", "latitude"), unit='deg'),
+                           SkyCoord(config.get("site", "longitude"), unit='deg'),
                            tz=0)
+
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
 #client (which should match any location set by the client).
 local_time_offset = 0
 
 #This will probably best be inferred by calibration...
-#For Greenwich, magnetic north is estimated to be 2 deg 40 min west
-#of grid north at Greenwich in July 2013.
+#For Greenwich, magnetic north is estimated to be 1 deg 27 min west
+#of grid north at Greenwich in July 2021.
 #http://www.geomag.bgs.ac.uk/data_service/models_compass/gma_calc.html
 #local_site_magnetic_offset = -2.67 * pi / 180.0
 
@@ -495,7 +500,8 @@ def meade_lx200_cmd_St_set_latitude(value):
     global local_site, config
     try:
         value = value.replace("*", "d")
-        local_site.latitude = coords.AngularCoordinate(value)
+        #local_site.latitude = coords.AngularCoordinate(value)
+        local.site.latitude = SkyCoord(value, unit='deg')
         #That worked, should be safe to save the value to disk later...
         config.set("site", "latitude", value)
         return "1"
@@ -513,7 +519,8 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     global local_site, config
     try:
         value = value.replace("*", "d")
-        local_site.longitude = coords.AngularCoordinate(value)
+        #local_site.longitude = coords.AngularCoordinate(value)
+        local.site.longitude = SkyCoord(value, unit='deg')
         sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n"
                          % (local_site.latitude.d, local_site.longitude.d))
         #That worked, should be safe to save the value to disk:
