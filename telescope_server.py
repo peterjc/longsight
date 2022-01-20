@@ -207,7 +207,7 @@ def equatorial_to_alt_az(gst=None):
     return alt, az % (2*pi)
     """
     location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
-    obs_time = time.Time()
+    obs_time = Time()
     alt_az_frame = AltAz(location=location, obstime=obs_time) 
     return alt_az_frame
 #This test implicitly assumes time between two calculations not significant:
