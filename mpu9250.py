@@ -44,7 +44,7 @@ class GYMOD(object):
 
     def update(self):
         """Read the current sensor values & store them for smoothing. No return value."""
-        t = time()
+        t = time.time()
         delta_t = t - self._last_gyro_time
         if delta_t < 0.020:
             #Want at least 20ms of data
@@ -142,7 +142,7 @@ class GYMOD(object):
     def read_gyro_delta(self):
         """Returns an X, Y, Z tuple - radians since last call."""
         g = self
-        t = time()
+        t = time.time()
         g.readGyroscopeMaster()
         d = np.array([g.gyro_scaled_x, g.gyro_scaled_y, g.gyro_scaled_z], np.float) / (t - self._last_gyro_time)
         self._last_gyro_time = t
