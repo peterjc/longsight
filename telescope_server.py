@@ -2,15 +2,7 @@
 """TCP/IP server which listens for Meade LX200 style serial commands.
 
 Intended to mimick a SkyFi (serial to TCP/IP bridge) and compatible
-Meade telescope normally controlled via a serial cable. In theory
-this could be modified to listen to an actual serial port too...
-
-The intended goal is that celestial/planetarium software like the
-SkySafari applications can talk to this server as if it was an off
-the shelf Meade LX200 compatible "Go To" telescope, when in fact
-it is a DIY intrumented telescope or simulation.
-
-See http://astrobeano.blogspot.co.uk/2014/01/instrumented-telescope-with-raspberry.html
+Meade telescope normally controlled via a serial cable. 
 
 Testing with Sky Safari Plus v4.0, with the telescope usually setup as:
 
@@ -22,42 +14,7 @@ Port Number: 4030 (default)
 Set Time & Location: On (default is off)
 Readout Rate: 4 per second (default)
 Save Log File: Off (default)
-
-With this, the "Connect/Disconnect" button works fine, once connected
-the scope queries the position using the :GR# and :GD# commands.
-
-The "Goto" button is disabled (when configured as a Push-To telecope).
-
-The "Align" button gives an are you sure prompt with the currently
-selected objects name (e.g. a star), and then sends its position
-using the Sr and Sd commands, followed by the :CM# command.
-
-The "Lock/Unlock" button controls if SkySafari automatically pans
-the display to keep the reported telescope direction centered.
-
-If configured as a Goto telescope, additional left/right and up/down
-buttons appear on screen (which send East/West, North/South movement
-commands. Also, a slew rate slider control appears. Depending on which
-model telescope was selected, this may give four rates via the
-RC/RG/RM/RS commands, or Sw commands (in the range 2 to 8).
-
-If SkySafari's "Set Time & Location" feature is selected, it will
-send commands St and Sg (for the location) then SG, SL, SC to set
-the time and date. If using "Meade LX-200 Classic" this imposes
-a 15s delay, using a newer model like the "Meade LX-200 GPS" there
-is no noticeable delay on connection.
-
-Additional limited testing also done with the Celestron NexStar
-protocol, although SkySafari 4 does not seem to use its built in
-commands for setting the date/time or location, nor the synching
-commands for alignment.
 """
-
-#More references on Alt/Az horizontal coordinates to equatorial:
-#http://pythonhosted.org/Astropysics/coremods/obstools.html#astropysics.obstools.Site
-#https://github.com/eteq/astropysics/issues/21
-#https://github.com/astropy/astropy-api/pull/6
-#http://infohost.nmt.edu/tcc/help/lang/python/examples/sidereal/ims/
 
 import socket
 import os
@@ -71,10 +28,11 @@ import time
 import datetime
 from math import pi, sin, cos, asin, acos, atan2, modf
 
-#TODO - Try astropy if I can get it to compile on Mac OS X...
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz
+from astropy import coordinates as coord
+from astropy.time import Time
 from astropy import units as u
-from astropy.coordinates import SkyCoord
-#from astropy import obstools
+import numpy as np
 
 #Local import
 from gy80 import GY80
@@ -92,7 +50,7 @@ if not os.path.isfile(config_file):
 
 print("Connecting to sensors...")
 imu = GY80()
-print("Connected to GY-80 sensor")
+print("Connected to MPU9250 sensor")
 
 print("Opening network port...")
 config = configparser.ConfigParser()
@@ -113,9 +71,11 @@ high_precision = True
 #local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude")),
 #                           coords.AngularCoordinate(config.get("site", "longitude")),
 #                           tz=0)
-local_site = obstools.Site(SkyCoord(config.get("site", "latitude"), unit='deg'),
-                           SkyCoord(config.get("site", "longitude"), unit='deg'),
-                           tz=0)
+obstime = Time('2010-01-01T20:00') + np.linspace(0, 6, 10000) * u.hour
+location = location = EarthLocation(lon=config.get("site", "longitude") * u.deg, lat=config.get("site", "latitude") * u.deg, height=2200 * u.m)
+frame = AltAz(obstime=obstime, location=location)
+# Is this the same as the old obstools.Site?
+local_site = frame
 
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
@@ -197,9 +157,12 @@ def greenwich_sidereal_time_in_radians():
     """Calculate using GMT (according to client's time settings)."""
     #Function astropysics.obstools.epoch_to_jd wants a decimal year as input
     #Function astropysics.obstools.calendar_to_jd can take a datetime object
-    gmt_jd = obstools.calendar_to_jd(site_time_gmt_as_datetime())
+    #gmt_jd = obstools.calendar_to_jd(site_time_gmt_as_datetime())
     #Convert from hours to radians... 24hr = 2*pi
-    return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
+    #return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
+    t = Time(site_time_gmt_as_datetime(), scale='utc', location=(config.get("site", "longitude"), config.get("site", "latitude")))
+    return t.sidereal_time('mean') * pi / 12
+
 
 def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
@@ -520,7 +483,7 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     try:
         value = value.replace("*", "d")
         #local_site.longitude = coords.AngularCoordinate(value)
-        local.site.longitude = SkyCoord(value, unit='deg')
+        local_site.longitude = SkyCoord(value, unit='deg')
         sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n"
                          % (local_site.latitude.d, local_site.longitude.d))
         #That worked, should be safe to save the value to disk:
@@ -624,9 +587,6 @@ def return_none(value=None):
     """Dummy command implementation returning nothing."""
     return None
 
-# TODO - Can SkySafari show focus control buttons?
-# Would be very cool to connect my motorised focuser to this...
-#
 # :F+# move in - returns nothing
 # :F-# move out - returns nothing
 # :FQ# halt Focuser Motion - returns: nothing
