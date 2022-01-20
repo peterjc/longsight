@@ -75,7 +75,7 @@ obstime = Time('2010-01-01T20:00') + np.linspace(0, 6, 10000) * u.hour
 location = location = EarthLocation.of_address('Greenwich')
 frame = AltAz(obstime=obstime, location=location)
 # Is this the same as the old obstools.Site?
-local_site = location
+local_site = coord.EarthLocation.of_address('Greenwich')
 
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
@@ -168,7 +168,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    lat = local_site.latitude.r
+    #lat = local_site.latitude.r
+    lat = local_site.lat.value
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
@@ -180,20 +181,23 @@ def alt_az_to_equatorial(alt, az, gst=None):
     hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
-    ra = gst - local_site.longitude.r - hours_in_rad
+    #ra = gst - local_site.longitude.r - hours_in_rad
+    ra = gst - local_site.lon.value - hours_in_rad
     return ra % (pi*2), dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    lat = local_site.latitude.r
+    #lat = local_site.latitude.r
+    lat = local_site.lat.value
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
     sin_dec = sin(dec)
     cos_dec = cos(dec)
-    h = gst - local_site.longitude.r - ra
+    #h = gst - local_site.longitude.r - ra
+    h = gst - local_site.lon.value - ra
     sin_h = sin(h)
     cos_h = cos(h)
     alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
