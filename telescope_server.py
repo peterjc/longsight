@@ -59,10 +59,9 @@ config = configparser.ConfigParser()
 config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
-server_name = socket.gethostbyname(socket.gethostname())
 print("Configuration read")
 print(config.get("server", "name"))
-print("Server Not set to")
+print("Serverset to")
 print(server_name)
 
 #If default to low precision, SkySafari turns it on anyway:
