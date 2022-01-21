@@ -26,6 +26,7 @@ except ImportError:
     import ConfigParser as configparser
 import time
 import datetime
+from datetime import datetime as dt
 from math import pi, sin, cos, asin, acos, atan2, modf
 
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz
@@ -207,7 +208,7 @@ def equatorial_to_alt_az(gst=None):
     return alt, az % (2*pi)
     """
     location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
-    now = datetime.now()
+    now = dt.now()
     times = [now]
     t = Time(times, scale='utc')
     obs_time = Time(t)
