@@ -59,8 +59,9 @@ config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
 server_name = socket.gethostbyname(socket.gethostname())
-if server_name.startswith("127.0."): #e.g. 127.0.0.1
-    server_name = subprocess.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
+print(server_name)
+#if server_name.startswith("127.0."): #e.g. 127.0.0.1
+#    server_name = subprocess.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
 #server_name = "10.0.0.1" #Override for wifi access
 #server_port = 4030 #Default port used by SkySafari
 
