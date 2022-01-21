@@ -38,6 +38,7 @@ import numpy as np
 #Local import
 from mpu9250 import GYMOD
 
+print("Checking Configuration")
 config_file = "telescope_server.ini"
 if not os.path.isfile(config_file):
     print("Using default settings")
@@ -59,19 +60,15 @@ config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
 server_name = socket.gethostbyname(socket.gethostname())
+print("Configuration read")
+print(config.get("server", "name"))
+print("Server Not set to")
 print(server_name)
-#if server_name.startswith("127.0."): #e.g. 127.0.0.1
-#    server_name = subprocess.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
-#server_name = "10.0.0.1" #Override for wifi access
-#server_port = 4030 #Default port used by SkySafari
 
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
 
 #Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
-#local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude")),
-#                           coords.AngularCoordinate(config.get("site", "longitude")),
-#                           tz=0)
 obstime = Time('2010-01-01T20:00') + np.linspace(0, 6, 10000) * u.hour
 location = location = EarthLocation.of_address('Greenwich')
 frame = AltAz(obstime=obstime, location=location)
