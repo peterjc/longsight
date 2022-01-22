@@ -116,4 +116,11 @@ def equatorial_to_alt_az(gst=None):
     return alt_az_frame
 ```
 
+With Python 3 socket connection handling changed slightly.
 
+Slight modification to line *751* 
+
+```
+            data_received = connection.recv(16)
+            data = data_received.decode()
+```
