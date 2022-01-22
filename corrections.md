@@ -118,9 +118,13 @@ def equatorial_to_alt_az(gst=None):
 
 With Python 3 socket connection handling changed slightly.
 
-Slight modification to line *751* 
+Slight modification to line *751* and *791*
 
 ```
             data_received = connection.recv(16)
             data = data_received.decode()
+```
+
+```
+connection.sendall(resp.encode())
 ```
