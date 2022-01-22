@@ -732,7 +732,7 @@ while True:
                     if resp:
                         if debug:
                             sys.stdout.write("Command %r, sending %r\n" % (cmd, resp))
-                        connection.sendall(resp)
+                        connection.sendall(resp.encode())
                     else:
                         if debug:
                             sys.stdout.write("Command %r, no response\n" % cmd)
