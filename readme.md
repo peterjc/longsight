@@ -15,3 +15,18 @@ Fast forward to 2022,
 - SkySafari has a whole lot of new versions
 
 This project is now an attempt to perseve the original hard work and begin to refactor the code. The needs I have are limited to the "Push To", image capturing and camera connection are not something I am focused on.
+
+# Sky Safari Plus
+
+Testing in the original project was done in Sky Safari Plus 4.0, current testing is in Sky Safari Plus 7.0
+
+Telescope usually setup as:
+
+Scope Type: Meade LX-200 GPS
+Mount Type: Equatorial Push-To (or any push to setting)
+Auto-Detect SkyFi: Off
+IP Address: That of the computer running this script (default 10.0.0.1)
+Port Number: 4030 (default)
+Set Time & Location: On (default is off)
+Readout Rate: 4 per second (default)
+Save Log File: Off (default)

@@ -3,17 +3,6 @@
 
 Intended to mimick a SkyFi (serial to TCP/IP bridge) and compatible
 Meade telescope normally controlled via a serial cable. 
-
-Testing with Sky Safari Plus v4.0, with the telescope usually setup as:
-
-Scope Type: Meade LX-200 GPS
-Mount Type: Equatorial Push-To (or any push to setting)
-Auto-Detect SkyFi: Off
-IP Address: That of the computer running this script (default 10.0.0.1)
-Port Number: 4030 (default)
-Set Time & Location: On (default is off)
-Readout Rate: 4 per second (default)
-Save Log File: Off (default)
 """
 
 import socket
@@ -150,14 +139,6 @@ def debug_time():
                          % site_time_gmt_as_datetime())
 
 def greenwich_sidereal_time_in_radians():
-    """Calculate using GMT (according to client's time settings)."""
-    #Function astropysics.obstools.epoch_to_jd wants a decimal year as input
-    #Function astropysics.obstools.calendar_to_jd can take a datetime object
-    #gmt_jd = obstools.calendar_to_jd(site_time_gmt_as_datetime())
-    #Convert from hours to radians... 24hr = 2*pi
-    #return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
-    #t = Time(site_time_gmt_as_datetime(), scale='utc', location=(config.get("site", "longitude"), config.get("site", "latitude")))
-    #return t.sidereal_time('mean') * pi / 12
     return t.sidereal_time('apparent', 'greenwich')
 
 def alt_az_to_equatorial(alt, az, gst=None):
@@ -186,22 +167,6 @@ def equatorial_to_alt_az(gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    """
-    #lat = local_site.latitude.r
-    lat = local_site.lat
-    #Calculate these once only for speed
-    sin_lat = sin(lat)
-    cos_lat = cos(lat)
-    sin_dec = sin(dec)
-    cos_dec = cos(dec)
-    #h = gst - local_site.longitude.r - ra
-    h = gst - local_site.lon
-    sin_h = sin(h)
-    cos_h = cos(h)
-    alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
-    az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
-    return alt, az % (2*pi)
-    """
     location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
     now = dt.now()
     times = [now]
@@ -724,7 +689,7 @@ while True:
     connection, client_address = sock.accept()
     data = ""
     try:
-        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
+        sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
             data += connection.recv(16)
             if not data:
@@ -738,13 +703,13 @@ while True:
                 while data[0:1] == "#":
                     #Stellarium seems to send '#:GR#' and '#:GD#'
                     #(perhaps to explicitly close and prior command?)
-                    #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
+                    sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
                     data = data[1:]
                 if not data:
                     break
                 if "#" in data:
                     raw_cmd = data[:data.index("#")]
-                    #sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
+                    sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
