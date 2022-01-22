@@ -692,7 +692,7 @@ while True:
         sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
             data = connection.recv(16)
-            data_received = data[0].decode()
+            data_received = data.decode()
             if not data_received:
                 imu.update()
                 break
