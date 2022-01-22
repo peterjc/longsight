@@ -156,9 +156,9 @@ def greenwich_sidereal_time_in_radians():
     #gmt_jd = obstools.calendar_to_jd(site_time_gmt_as_datetime())
     #Convert from hours to radians... 24hr = 2*pi
     #return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
-    t = Time(site_time_gmt_as_datetime(), scale='utc', location=(config.get("site", "longitude"), config.get("site", "latitude")))
-    return t.sidereal_time('mean') * pi / 12
-
+    #t = Time(site_time_gmt_as_datetime(), scale='utc', location=(config.get("site", "longitude"), config.get("site", "latitude")))
+    #return t.sidereal_time('mean') * pi / 12
+    return t.sidereal_time('apparent', 'greenwich')
 
 def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
