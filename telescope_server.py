@@ -64,7 +64,10 @@ server_port = config.getint("server", "port") #e.g. 4030
 high_precision = True
 
 #Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
-obstime = Time('2010-01-01T20:00') + np.linspace(0, 6, 10000) * u.hour
+now = dt.now()
+times = [now]
+t = Time(times, scale='utc')
+obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
 location = location = EarthLocation.of_address('Greenwich')
 frame = AltAz(obstime=obstime, location=location)
 # Is this the same as the old obstools.Site?
