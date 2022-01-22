@@ -22,6 +22,7 @@ Testing in the original project was done in Sky Safari Plus 4.0, current testing
 
 Telescope usually setup as:
 
+'''
 Scope Type: Meade LX-200 GPS
 Mount Type: Equatorial Push-To (or any push to setting)
 Auto-Detect SkyFi: Off
@@ -30,3 +31,4 @@ Port Number: 4030 (default)
 Set Time & Location: On (default is off)
 Readout Rate: 4 per second (default)
 Save Log File: Off (default)
+'''
