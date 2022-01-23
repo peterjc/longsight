@@ -144,7 +144,7 @@ def greenwich_sidereal_time_in_radians():
 
 def alt_az_to_equatorial(alt, az, gst=None):
     if debug:
-        sys.stdout.write("alt_az_to_equatorial function\n")
+        sys.stdout.write("\nalt_az_to_equatorial function\n")
         sys.stdout.write("alt %r\n" % alt)
         sys.stdout.write("az %r\n" % az)
     global local_site #and time offset used too
@@ -159,7 +159,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     if debug:
-        sys.stdout.write("equatorial_to_alt_az function\n")
+        sys.stdout.write("\nequatorial_to_alt_az function\n")
         sys.stdout.write("ra %r\n" % ra)
         sys.stdout.write("dec %r\n" % dec)
     global local_site #and time offset used too
@@ -310,6 +310,7 @@ def radians_to_sddmmss(angle):
     fraction, degrees = modf(angle * 180 / pi)
     fraction, arcminutes = modf(fraction * 60.0)
     if debug:
+        sys.stdout.write("\radians_to_sddmmss function\n")
         sys.stdout.write("angle: %s\n" % angle)
         sys.stdout.write("fraction: %s\n" % fraction)
         sys.stdout.write("degress: %s\n" % degrees)
@@ -352,6 +353,7 @@ def meade_lx200_cmd_GD_get_dec():
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if debug:
+        sys.stdout.write("\meade_lx200_cmd_GD_get_dec function\n")
         sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
                          % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
     if high_precision:
