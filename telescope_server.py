@@ -149,7 +149,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
-    newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.degree, az = local_site.az + az*u.rad, obstime = obs, frame = 'altaz')
+    newAltAzcoordiantes = SkyCoord(ra = local_site.alt + alt*u.degree, az = local_site.az + az*u.rad, obstime = obs, frame = 'altaz')
     return newAltAzcoordiantes.icrs.ra % (pi*2), newAltAzcoordiantes.icrs.dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
@@ -545,67 +545,6 @@ def return_none(value=None):
 # :FS# Set Focus speed to slowest - Returns: Nothing
 # :F<n># set focuser speed to <n> where <n> is 1..4 - Returns: Nothing
 
-# ==========================
-# Celestron NexStar Protocol
-# ==========================
-
-def nexstar_cmd_V_version():
-    """NexStar command V, version query, returns v1.2"""
-    return chr(1) + chr(2) + "#"
-
-def nexstar_cmd_E_get_ra_dec():
-    """Nexstar command E, get RA/Dec.
-
-    Returns integers in hex, fraction of 65536.
-    """
-    update_alt_az()
-    ra, dec = alt_az_to_equatorial(local_alt, local_az)
-    #Convert from radians to fraction of 65536
-    ra = int((65536*ra) / (2*pi))
-    dec = int((65536*dec) / (2*pi))
-    return "%04X,%04X#" % (ra, dec)
-
-def nexstar_cmd_e_get_ra_dec_precise():
-    """Nexstar command e, get precise RA/Dec.
-
-    Returns integers in hex, fraction of 4294967296.
-    """
-    update_alt_az()
-    ra, dec = alt_az_to_equatorial(local_alt, local_az)
-    #Convert from radians to fraction of 4294967296
-    ra = int((4294967296*ra) / (2*pi))
-    dec = int((4294967296*dec) / (2*pi))
-    return "%08X,%08X#"% (ra, dec)
-
-def nexstar_cmd_R_goto_ra_dec(value):
-    """Nexstar command R, goto RA/Dec
-
-    e.g R34AB,12CE
-    """
-    global target_ra, target_dec
-    target_ra, target_dec = (int(v,16)*2*pi/65536 for v in value.split(","))
-    return "#"
-
-def nexstar_cmd_r_goto_ra_dec_precise(value):
-    """Nexstar command r, goto RA/Dec
-
-    e.g. r34AB0500,12CE0500
-    """
-    global target_ra, target_dec
-    target_ra, target_dec = (int(v,16)*2*pi/4294967296 for v in value.split(","))
-    return "#"
-
-def nexstar_cmd_M_cancel_goto():
-    """Nextstar command M, cancel goto (stop moving)"""
-    return "#"
-
-def nexstar_cmd_P_passthrough(value):
-    """Nexstar command P, pass-though to motor, GPS, etc.
-
-    Used for the slew commands (which we don't support).
-    """
-    return "ERROR#"
-
 # ================
 # Main Server Code
 # ================
@@ -695,8 +634,6 @@ while True:
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
-                    #This will break on complex NexStar commands,
-                    #but don't care - Meade LX200 is the prority.
                     raw_cmd = data
                     cmd = raw_cmd[:3]
                     value = raw_cmd[3:]
