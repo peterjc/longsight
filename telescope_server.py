@@ -143,6 +143,8 @@ def greenwich_sidereal_time_in_radians():
     return t.sidereal_time('apparent', 'greenwich')
 
 def alt_az_to_equatorial(alt, az, gst=None):
+    sys.stdout.write("alt %r\n" % alt)
+    sys.stdout.write("az %r\n" % az)
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
