@@ -48,7 +48,7 @@ config = configparser.ConfigParser()
 config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
-site_address = config.getint("site", "address") #e.g. Greenwich
+site_address = config.get("site", "address") #e.g. Greenwich
 
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
