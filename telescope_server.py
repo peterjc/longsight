@@ -18,7 +18,7 @@ import datetime
 from datetime import datetime as dt
 from math import pi, sin, cos, asin, acos, atan2, modf
 
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude
 from astropy import coordinates as coord
 from astropy.time import Time
 from astropy import units as u
@@ -150,7 +150,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
-    return newAltAzcoordiantes.icrs.ra[0], newAltAzcoordiantes.icrs.dec[0]
+    a = Longitude([local_site.alt] * u.deg)
+    return a.radian[0][0], newAltAzcoordiantes.icrs.dec[0]
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     sys.stdout.write("ra %r\n" % ra)
