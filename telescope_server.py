@@ -150,8 +150,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az*u.rad, obstime = obs, frame = 'altaz')
-    newAltAzcoordiantes.icrs
-    return newAltAzcoordiantes.ra % (pi*2), newAltAzcoordiantes.dec
+    return newAltAzcoordiantes.icrs.ra % (pi*2), newAltAzcoordiantes.icrs.dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     sys.stdout.write("ra %r\n" % ra)
