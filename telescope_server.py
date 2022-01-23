@@ -53,11 +53,6 @@ site_address = config.get("site", "address") #e.g. Greenwich
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
 
-#Set local site (AltAz)
-c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
-loc = EarthLocation.of_address(site_address)
-local_site = c.transform_to(AltAz(obstime = get_obstime(), location = loc))
-
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
 #client (which should match any location set by the client).
@@ -102,7 +97,7 @@ def _check_close(a, b, error=0.0001):
         raise ValueError("%s vs %s, difference %s > %s"
                          % (a, b, diff, error))
 
-def get_obstime():
+def obs_time():
     now = dt.now()
     times = [now]
     t = Time(times, scale='utc')
@@ -172,15 +167,13 @@ def equatorial_to_alt_az(gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
-    
-    SkyCoord(alt = local_site.alt.deg, az = local_site.az.deg + x*u.deg, obstime = time, frame = 'altaz')
+    obs = obs_time()
 
-    now = dt.now()
-    times = [now]
-    t = Time(times, scale='utc')
-    obs_time = Time(t)
-    alt_az_frame = AltAz(location=location, obstime=obs_time) 
+ #   location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
+#    SkyCoord(alt = local_site.alt.deg, az = local_site.az.deg + x*u.deg, obstime = obs, frame = 'altaz')
+ #   alt_az_frame = AltAz(location=location, obstime=obs) 
+
+    alt_az_frame = 0
     return alt_az_frame
 #This test implicitly assumes time between two calculations not significant:
 #_check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
@@ -680,6 +673,12 @@ command_map = {
     "M": nexstar_cmd_M_cancel_goto,
     "P": nexstar_cmd_P_passthrough,
 }
+
+#Set local site (AltAz)
+obs = obs_time()
+c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
+loc = EarthLocation.of_address(site_address)
+local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
