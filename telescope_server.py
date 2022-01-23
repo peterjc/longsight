@@ -317,7 +317,7 @@ def radians_to_sddmmss(angle):
         sys.stdout.write("fraction: %s\n" % fraction)
         sys.stdout.write("degress: %s\n" % degrees)
         sys.stdout.write("return: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
-    return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
+    return "%s%02i*%02i:%02i#" % (sign, angle, arcminutes, round(fraction * 60.0))
 
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
