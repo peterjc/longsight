@@ -151,7 +151,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
     a = Longitude([local_site.alt] * u.deg)
-    return a.radian[0][0], newAltAzcoordiantes.icrs.dec[0]
+    return a.radian[0][0], 12
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     sys.stdout.write("ra %r\n" % ra)
