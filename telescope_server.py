@@ -318,7 +318,7 @@ def radians_to_sddmmss(angle):
         sys.stdout.write("degress: %s\n" % degrees)
         sys.stdout.write("return: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
     return "%s%02i*%02i:%02i#" % (sign, angle, arcminutes, round(fraction * 60.0))
-
+'''
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
@@ -329,7 +329,7 @@ for r in [0, 0.01, 0.1, pi, 2*pi]:
     assert 0 <= r <= 2*pi, r
     _check_close(parse_hhmm(radians_to_hhmmt(r).rstrip("#")), r)
     _check_close(parse_hhmm(radians_to_hhmmss(r).rstrip("#")), r)
-
+'''
 
 def meade_lx200_cmd_GR_get_ra():
     """For the :GR# command, Get Telescope RA
