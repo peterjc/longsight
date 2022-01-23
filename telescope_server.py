@@ -599,7 +599,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (server_name, server_port)
 sys.stderr.write("Starting up on %s port %s\n" % server_address)
 sock.bind(server_address)
-sock.listen(1)
+sock.listen(5)
 
 while True:
     #sys.stdout.write("waiting for a connection\n")
