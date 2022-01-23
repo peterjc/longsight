@@ -150,7 +150,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.degree, az = local_site.az + az*u.rad, obstime = obs, frame = 'altaz')
-    return newAltAzcoordiantes.alt, newAltAzcoordiantes.az
+    return newAltAzcoordiantes.icrs.ra % (pi*2), newAltAzcoordiantes.icrs.dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     sys.stdout.write("ra %r\n" % ra)
@@ -679,19 +679,19 @@ while True:
                 break
             if debug:
                 sys.stdout.write("Processing %r\n" % data)
-            #For stacked commands like ":RS#:GD#",
-            #but also lone NexStar ones like "e"
+                #For stacked commands like ":RS#:GD#",
+                #but also lone NexStar ones like "e"
             while data:
                 while data[0:1] == "#":
                     #Stellarium seems to send '#:GR#' and '#:GD#'
                     #(perhaps to explicitly close and prior command?)
-                    sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
+                    #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
                     data = data[1:]
                 if not data:
                     break
                 if "#" in data:
                     raw_cmd = data[:data.index("#")]
-                    sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
+                    #sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
