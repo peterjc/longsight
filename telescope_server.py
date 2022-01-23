@@ -577,14 +577,6 @@ command_map = {
     ":SL": meade_lx200_cmd_SL_set_local_time,
     ":SC": meade_lx200_cmd_SC_set_local_date,
     ":U":  meade_lx200_cmd_U_precision_toggle,
-    #Celestron NexStar Communication Protocol
-    "V": nexstar_cmd_V_version,
-    "E": nexstar_cmd_E_get_ra_dec,
-    "e": nexstar_cmd_e_get_ra_dec_precise,
-    "R": nexstar_cmd_R_goto_ra_dec,
-    "r": nexstar_cmd_r_goto_ra_dec_precise,
-    "M": nexstar_cmd_M_cancel_goto,
-    "P": nexstar_cmd_P_passthrough,
 }
 
 #Set local site (AltAz)
