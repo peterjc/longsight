@@ -18,7 +18,7 @@ import datetime
 from datetime import datetime as dt
 from math import pi, sin, cos, asin, acos, atan2, modf
 
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude, Angle
 from astropy import coordinates as coord
 from astropy.time import Time
 from astropy import units as u
@@ -143,19 +143,23 @@ def greenwich_sidereal_time_in_radians():
     return t.sidereal_time('apparent', 'greenwich')
 
 def alt_az_to_equatorial(alt, az, gst=None):
-    sys.stdout.write("alt %r\n" % alt)
-    sys.stdout.write("az %r\n" % az)
+    if debug:
+        sys.stdout.write("alt %r\n" % alt)
+        sys.stdout.write("az %r\n" % az)
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
-    a = Longitude([local_site.alt] * u.deg)
-    return a.radian[0][0], newAltAzcoordiantes.az[0]
+    alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
+    az = Angle([newAltAzcoordiantes.az] * u.deg)
+    az.wrap_at('90d', inplace=True)
+    return alt.radian[0][0], az.degree[0][0]
 
 def equatorial_to_alt_az(ra, dec, gst=None):
-    sys.stdout.write("ra %r\n" % ra)
-    sys.stdout.write("dec %r\n" % dec)
+    if debug:
+        sys.stdout.write("ra %r\n" % ra)
+        sys.stdout.write("dec %r\n" % dec)
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
@@ -301,13 +305,12 @@ def radians_to_sddmmss(angle):
         angle = abs(angle)
     else:
         sign = "+"
-    sys.stdout.write("angle: %s\n" % angle)
-
     fraction, degrees = modf(angle * 180 / pi)
-    sys.stdout.write("fraction: %s\n" % fraction)
-    sys.stdout.write("degress: %s\n" % degrees)
-
     fraction, arcminutes = modf(fraction * 60.0)
+    if debug:
+        sys.stdout.write("angle: %s\n" % angle)
+        sys.stdout.write("fraction: %s\n" % fraction)
+        sys.stdout.write("degress: %s\n" % degrees)
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
 
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
