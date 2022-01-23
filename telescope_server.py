@@ -301,12 +301,12 @@ def radians_to_sddmmss(angle):
         angle = abs(angle)
     else:
         sign = "+"
-    sys.stdout.write("angle: %s, %s\n" % angle)
+    sys.stdout.write("angle: %s\n" % angle)
 
     fraction, degrees = modf(angle * 180 / pi)
-    sys.stdout.write("fraction: %s, %s\n" % fraction)
-    sys.stdout.write("degress: %s, %s\n" % degrees)
-    
+    sys.stdout.write("fraction: %s\n" % fraction)
+    sys.stdout.write("degress: %s\n" % degrees)
+
     fraction, arcminutes = modf(fraction * 60.0)
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
 
