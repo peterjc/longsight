@@ -54,13 +54,9 @@ site_address = config.get("site", "address") #e.g. Greenwich
 high_precision = True
 
 #Set local site (AltAz)
-now = dt.now()
-times = [now]
-t = Time(times, scale='utc')
-obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
 c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
 loc = EarthLocation.of_address(site_address)
-local_site = c.transform_to(AltAz(obstime = obstime, location = loc))
+local_site = c.transform_to(AltAz(obstime = get_obstime(), location = loc))
 
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
@@ -106,6 +102,13 @@ def _check_close(a, b, error=0.0001):
         raise ValueError("%s vs %s, difference %s > %s"
                          % (a, b, diff, error))
 
+def get_obstime():
+    now = dt.now()
+    times = [now]
+    t = Time(times, scale='utc')
+    obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
+    return obstime
+
 def update_alt_az():
     global imu, offset_alt, offset_az, local_alt, local_az
     yaw, pitch, roll = imu.current_orientation_euler_angles_hybrid()
@@ -139,6 +142,9 @@ def debug_time():
                          % site_time_gmt_as_datetime())
 
 def greenwich_sidereal_time_in_radians():
+    now = dt.now()
+    times = [now]
+    t = Time(times, scale='utc')
     return t.sidereal_time('apparent', 'greenwich')
 
 def alt_az_to_equatorial(alt, az, gst=None):
@@ -167,6 +173,9 @@ def equatorial_to_alt_az(gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
+    
+    SkyCoord(alt = local_site.alt.deg, az = local_site.az.deg + x*u.deg, obstime = time, frame = 'altaz')
+
     now = dt.now()
     times = [now]
     t = Time(times, scale='utc')
