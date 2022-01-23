@@ -142,6 +142,7 @@ def greenwich_sidereal_time_in_radians():
     t = Time(times, scale='utc')
     return t.sidereal_time('apparent', 'greenwich')
 
+'''
 def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
     if gst is None:
@@ -162,7 +163,6 @@ def alt_az_to_equatorial(alt, az, gst=None):
     ra = gst - local_site.az - hours_in_rad
     return ra % (pi*2), dec
 
-#def equatorial_to_alt_az(ra, dec, gst=None):
 def equatorial_to_alt_az(gst=None):
     global local_site #and time offset used too
     if gst is None:
@@ -179,13 +179,28 @@ def equatorial_to_alt_az(gst=None):
 #_check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
 #_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
 #_check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
+'''
+
+def alt_az_to_equatorial(alt, az, gst=None):
+    global local_site #and time offset used too
+    if gst is None:
+        gst = greenwich_sidereal_time_in_radians()
+    return ra % (pi*2), dec
+
+def equatorial_to_alt_az(ra, dec, gst=None):
+    global local_site #and time offset used too
+    if gst is None:
+        gst = greenwich_sidereal_time_in_radians()
+    c = SkyCoord(ra, dec, frame='icrs')
+    obs = obs_time()
+    cAltAz = c.transform_to(AltAz(obstime = obs_time, location = local_site))
+    return cAltAz.alt, cAltAz.az % (2*pi)
 
 #This ensures identical time stamp used:
 gst = greenwich_sidereal_time_in_radians()
 for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
     for dec in [-0.49*pi, -1.1, -1, 0, 0.001, 1.55, 0.49*pi]:
-        #alt, az = equatorial_to_alt_az(ra, dec, gst)
-        altaz = equatorial_to_alt_az(gst)
+        alt, az = equatorial_to_alt_az(ra, dec, gst)
         #_check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
 del gst, ra, dec
 
