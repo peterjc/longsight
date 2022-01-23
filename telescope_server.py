@@ -34,7 +34,7 @@ if not os.path.isfile(config_file):
     h = open("telescope_server.ini", "w")
     h.write("[server]\nname=127.0.0.1\nport=4030\n")
     #Default to Greenwich as the site
-    h.write("[site]\nlatitude=+51d28m38s\nlongitude=0\n")
+    h.write("[site]\naddress=Greenwich\n")
     #Default to no correction of the angles
     h.write("[offsets]\nazimuth=0\naltitude=0\n")
     h.close()
@@ -48,19 +48,19 @@ config = configparser.ConfigParser()
 config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
+site_address = config.getint("site", "address") #e.g. Greenwich
 
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
 
-#Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
+#Set local site (AltAz)
 now = dt.now()
 times = [now]
 t = Time(times, scale='utc')
 obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
-location = location = EarthLocation.of_address('Greenwich')
-frame = AltAz(obstime=obstime, location=location)
-# Is this the same as the old obstools.Site?
-local_site = coord.EarthLocation.of_address('Greenwich')
+c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
+loc = EarthLocation.of_address(config.get("site", "address"))
+local_site = c.transform_to(AltAz(obstime = time, location = loc))
 
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
@@ -145,8 +145,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    #lat = local_site.latitude.r
-    lat = local_site.lat
+    lat = local_site.alt
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
@@ -159,7 +158,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
     #ra = gst - local_site.longitude.r - hours_in_rad
-    ra = gst - local_site.lon - hours_in_rad
+    ra = gst - local_site.az - hours_in_rad
     return ra % (pi*2), dec
 
 #def equatorial_to_alt_az(ra, dec, gst=None):
