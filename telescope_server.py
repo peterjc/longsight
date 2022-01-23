@@ -149,6 +149,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
     return ra % (pi*2), dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
+    sys.stdout.write("ra %r\n" % ra)
+    sys.stdout.write("dec %r\n" % dec)
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
