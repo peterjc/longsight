@@ -115,6 +115,8 @@ def update_alt_az():
     #Altitude is measured upwards
     local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
+    if debug:
+        sys.stdout.write("\nFUNCTION update_alt_az\n")
 
 def site_time_gmt_as_epoch():
     global local_time_offset
@@ -144,7 +146,7 @@ def greenwich_sidereal_time_in_radians():
 
 def alt_az_to_equatorial(alt, az, gst=None):
     if debug:
-        sys.stdout.write("\nalt_az_to_equatorial function\n")
+        sys.stdout.write("\nFUNCTION alt_az_to_equatorial\n")
         sys.stdout.write("alt %r\n" % alt)
         sys.stdout.write("az %r\n" % az)
     global local_site #and time offset used too
@@ -159,7 +161,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     if debug:
-        sys.stdout.write("\nequatorial_to_alt_az function\n")
+        sys.stdout.write("\nFUNCTION equatorial_to_alt_az\n")
         sys.stdout.write("ra %r\n" % ra)
         sys.stdout.write("dec %r\n" % dec)
     global local_site #and time offset used too
@@ -310,7 +312,7 @@ def radians_to_sddmmss(angle):
     fraction, degrees = modf(angle * 180 / pi)
     fraction, arcminutes = modf(fraction * 60.0)
     if debug:
-        sys.stdout.write("\nradians_to_sddmmss function\n")
+        sys.stdout.write("\nFUNCTION radians_to_sddmmss\n")
         sys.stdout.write("angle: %s\n" % angle)
         sys.stdout.write("fraction: %s\n" % fraction)
         sys.stdout.write("degress: %s\n" % degrees)
@@ -354,7 +356,7 @@ def meade_lx200_cmd_GD_get_dec():
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if debug:
-        sys.stdout.write("\nmeade_lx200_cmd_GD_get_dec function\n")
+        sys.stdout.write("\nFUNCTION meade_lx200_cmd_GD_get_dec\n")
         sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
                          % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
     if high_precision:
@@ -602,7 +604,7 @@ local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (server_name, server_port)
-sys.stderr.write("Starting up on %s port %s\n" % server_address)
+sys.stderr.write("\nStarting up on %s port %s\n" % server_address)
 sock.bind(server_address)
 sock.listen(5)
 
