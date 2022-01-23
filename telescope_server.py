@@ -146,7 +146,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     #lat = local_site.latitude.r
-    lat = local_site.lat.value
+    lat = local_site.lat
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
@@ -159,7 +159,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
     #ra = gst - local_site.longitude.r - hours_in_rad
-    ra = gst - local_site.lon.value - hours_in_rad
+    ra = gst - local_site.lon - hours_in_rad
     return ra % (pi*2), dec
 
 #def equatorial_to_alt_az(ra, dec, gst=None):
@@ -689,7 +689,7 @@ while True:
     connection, client_address = sock.accept()
     data = ""
     try:
-        sys.stdout.write("Client connected: %s, %s\n" % client_address)
+        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
             data_received = connection.recv(16)
             data = data_received.decode()
