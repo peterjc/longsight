@@ -59,7 +59,7 @@ times = [now]
 t = Time(times, scale='utc')
 obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
 c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
-loc = EarthLocation.of_address(config.get("site", "address"))
+loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = time, location = loc))
 
 #Rather than messing with the system clock, will store any difference
