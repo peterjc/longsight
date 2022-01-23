@@ -650,6 +650,7 @@ c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
 loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 
+'''
 #This ensures identical time stamp used:
 gst = greenwich_sidereal_time_in_radians()
 for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
@@ -657,6 +658,7 @@ for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
         alt, az = equatorial_to_alt_az(ra, dec, gst)
         _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
 del gst, ra, dec
+'''
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
