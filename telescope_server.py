@@ -144,13 +144,14 @@ def greenwich_sidereal_time_in_radians():
 
 def alt_az_to_equatorial(alt, az, gst=None):
     if debug:
+        sys.stdout.write("alt_az_to_equatorial function")
         sys.stdout.write("alt %r\n" % alt)
         sys.stdout.write("az %r\n" % az)
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
-    newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az, obstime = obs, frame = 'altaz')
+    newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
     alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
     az = Angle([newAltAzcoordiantes.az] * u.deg)
     az.wrap_at('90d', inplace=True)
