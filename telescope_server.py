@@ -144,7 +144,7 @@ def greenwich_sidereal_time_in_radians():
 
 def alt_az_to_equatorial(alt, az, gst=None):
     if debug:
-        sys.stdout.write("alt_az_to_equatorial function")
+        sys.stdout.write("alt_az_to_equatorial function\n")
         sys.stdout.write("alt %r\n" % alt)
         sys.stdout.write("az %r\n" % az)
     global local_site #and time offset used too
@@ -159,6 +159,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     if debug:
+        sys.stdout.write("equatorial_to_alt_az function\n")
         sys.stdout.write("ra %r\n" % ra)
         sys.stdout.write("dec %r\n" % dec)
     global local_site #and time offset used too
