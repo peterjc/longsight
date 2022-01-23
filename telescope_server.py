@@ -601,10 +601,6 @@ sock.bind(server_address)
 sock.listen(1)
 
 while True:
-    # SkySafari v4.0.1 continously opens and closed the connection,
-    # while Stellarium via socat opens it and keeps it open using:
-    # $ ./socat GOPEN:/dev/ptyp0,ignoreeof TCP:raspberrypi8:4030
-    # (probably socat which is maintaining the link)
     #sys.stdout.write("waiting for a connection\n")
     connection, client_address = sock.accept()
     data = ""
@@ -619,11 +615,8 @@ while True:
             if debug:
                 sys.stdout.write("Processing %r\n" % data)
                 #For stacked commands like ":RS#:GD#",
-                #but also lone NexStar ones like "e"
             while data:
                 while data[0:1] == "#":
-                    #Stellarium seems to send '#:GR#' and '#:GD#'
-                    #(perhaps to explicitly close and prior command?)
                     #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
                     data = data[1:]
                 if not data:
