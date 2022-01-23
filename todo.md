@@ -1,12 +1,14 @@
 # Items to Check once it runs
-Did the refactoring to astropy provide the right values?
+- Did the refactoring to astropy provide the right values?
+- Is the perspective and the values all correct, Sky Safari seems off from the perspective I would expect.
 
 Lines *327, 342* for telescope to *alt_az_to_equatorial*
 Lines *184* for telescope to *equatorial_to_alt_az*
 
 # Pending Items to Solve
 
-- Connecting to Sky Safari Plus 7.0 works, after connecting the following comes up and then Sky Safari disconnects. Could be the 2488 degrees?
+- Connecting to Sky Safari Plus 7.0 works, after connecting if you choose "align" the following comes up and the program crashes *lines 184 - equatorial_to_alt_az*
+
 ```
 Traceback (most recent call last):
   File "/home/pi/longsight/telescope_server.py", line 650, in <module>
