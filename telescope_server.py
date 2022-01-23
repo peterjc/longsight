@@ -150,7 +150,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     obs = obs_time()
-    newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt, az = local_site.az + az, obstime = obs, frame = 'altaz')
+    newAltAzcoordiantes = SkyCoord(alt = local_site.alt + alt*u.deg, az = local_site.az + az, obstime = obs, frame = 'altaz')
     alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
     az = Angle([newAltAzcoordiantes.az] * u.deg)
     az.wrap_at('90d', inplace=True)
