@@ -146,7 +146,10 @@ def alt_az_to_equatorial(alt, az, gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    return ra % (pi*2), dec
+    obs = obs_time()
+    newAltAzcoordiantes = SkyCoord(alt = alt, az = az, obstime = obs, frame = 'altaz')
+    newAltAzcoordiantes.icrs
+    return newAltAzcoordiantes.ra % (pi*2), newAltAzcoordiantes.dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     sys.stdout.write("ra %r\n" % ra)
@@ -649,16 +652,6 @@ obs = obs_time()
 c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
 loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = obs, location = loc))
-
-'''
-#This ensures identical time stamp used:
-gst = greenwich_sidereal_time_in_radians()
-for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
-    for dec in [-0.49*pi, -1.1, -1, 0, 0.001, 1.55, 0.49*pi]:
-        alt, az = equatorial_to_alt_az(ra, dec, gst)
-        _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
-del gst, ra, dec
-'''
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
