@@ -316,7 +316,6 @@ def radians_to_sddmmss(angle):
         sign = "+"
     fraction, degrees = modf(angle / pi)
     fraction, arcminutes = modf(fraction * 60.0)
-    tmp = angle.to_string(unit=u.degree, sep=('deg', 'm', 's'))
     if debug:
         sys.stdout.write("\nFUNCTION radians_to_sddmmss\n")
         sys.stdout.write("angle: %s\n" % angle)
@@ -324,7 +323,6 @@ def radians_to_sddmmss(angle):
         sys.stdout.write("degress: %s\n" % degrees)
         sys.stdout.write("arcminutes: %s\n" % arcminutes)
         sys.stdout.write("return: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
-        sys.stdout.write("tmp: %s\n" % tmp)
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
 '''
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
