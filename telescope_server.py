@@ -155,9 +155,9 @@ def alt_az_to_equatorial(alt, az, gst=None):
     az.wrap_at('90d', inplace=True)
     if debug:
         sys.stdout.write("Actual Values\n")
-        sys.stdout.write("ra %r\n" % alt.radian[0][0] % (pi*2))
+        sys.stdout.write("ra %r\n" % alt.radian[0][0])
         sys.stdout.write("dec %r\n" % az.degree[0][0])
-    return alt.radian[0][0] % (pi*2), az.degree[0][0]
+    return alt.radian[0][0], az.degree[0][0]
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     if debug:
