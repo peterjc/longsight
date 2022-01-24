@@ -157,7 +157,6 @@ def alt_az_to_equatorial(alt, az, gst=None):
     alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
     az = Angle([newAltAzcoordiantes.az] * u.deg)
     az.wrap_at('180d', inplace=True)
-    #    return alt.radian[0][0], az.degree[0][0]
     
     lat = Latitude([newAltAzcoordiantes.alt] * u.deg)
     #Calculate these once only for speed
@@ -173,8 +172,11 @@ def alt_az_to_equatorial(alt, az, gst=None):
         hours_in_rad = 2*pi - hours_in_rad
     ra = gst - alt.radian[0][0] - hours_in_rad
     if debug:
-        sys.stdout.write("alt %r\n" % alt)
-    return ra % (pi*2), dec
+        sys.stdout.write("ra %r\n" % ra % (pi*2))
+        sys.stdout.write("dec %r\n" % dec)
+    #return ra % (pi*2), dec
+    return alt.radian[0][0], az.degree[0][0]
+
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     if debug:
