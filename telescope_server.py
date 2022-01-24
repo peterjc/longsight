@@ -152,7 +152,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
     alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
     az = Angle([newAltAzcoordiantes.az] * u.deg)
-    az.wrap_at('90d', inplace=True)
+    az.wrap_at('180d', inplace=True)
     if debug:
         sys.stdout.write("Actual Values\n")
         sys.stdout.write("ra %r\n" % alt.radian[0][0])
@@ -316,7 +316,7 @@ def radians_to_sddmmss(angle):
         angle = abs(angle)
     else:
         sign = "+"
-    fraction, degrees = modf(angle * 90 / pi)
+    fraction, degrees = modf(angle * 180 / pi)
     fraction, arcminutes = modf(fraction * 60.0)
     if debug:
         sys.stdout.write("\nFUNCTION radians_to_sddmmss\n")
