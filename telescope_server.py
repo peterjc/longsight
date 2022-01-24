@@ -169,7 +169,7 @@ def equatorial_to_alt_az(ra, dec, gst=None):
         gst = greenwich_sidereal_time_in_radians()
     c = SkyCoord(ra = ra*u.degree, dec = dec*u.degree, frame='icrs')
     obs = obs_time()
-    cAltAz = c.transform_to(AltAz(obstime = obs_time, location = local_site))
+    cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
     return cAltAz.alt, cAltAz.az % (2*pi)
 
 # ====================
