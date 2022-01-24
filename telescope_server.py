@@ -167,7 +167,7 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    c = SkyCoord(ra = ra, dec = dec, frame='icrs')
+    c = SkyCoord(ra = ra*u.degree, dec = dec*u.degree, frame='icrs')
     obs = obs_time()
     cAltAz = c.transform_to(AltAz(obstime = obs_time, location = local_site))
     return cAltAz.alt, cAltAz.az % (2*pi)
@@ -431,7 +431,7 @@ def meade_lx200_cmd_St_set_latitude(value):
     try:
         value = value.replace("*", "d")
         #local_site.latitude = coords.AngularCoordinate(value)
-        local.site.latitude = SkyCoord(value, unit='deg')
+        local_site.latitude = SkyCoord(value, unit='deg')
         #That worked, should be safe to save the value to disk later...
         config.set("site", "latitude", value)
         return "1"
