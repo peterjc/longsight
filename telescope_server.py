@@ -18,7 +18,7 @@ import datetime
 from datetime import datetime as dt
 from math import pi, sin, cos, asin, acos, atan2, modf
 
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude, Angle, Latitude
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude, Angle
 from astropy import coordinates as coord
 from astropy.time import Time
 from astropy import units as u
@@ -158,7 +158,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     az = Angle([newAltAzcoordiantes.az] * u.deg)
     az.wrap_at('180d', inplace=True)
     
-    lat = Latitude([newAltAzcoordiantes.alt])
+    lat = az.degree[0][0]
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
