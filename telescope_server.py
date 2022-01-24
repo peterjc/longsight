@@ -58,12 +58,6 @@ high_precision = True
 #client (which should match any location set by the client).
 local_time_offset = 0
 
-#This will probably best be inferred by calibration...
-#For Greenwich, magnetic north is estimated to be 1 deg 27 min west
-#of grid north at Greenwich in July 2021.
-#http://www.geomag.bgs.ac.uk/data_service/models_compass/gma_calc.html
-#local_site_magnetic_offset = -2.67 * pi / 180.0
-
 #These will come from sensor information... storing them in radians
 local_alt = 85 * pi / 180.0
 local_az = 30 * pi / 180.0
@@ -601,7 +595,7 @@ command_map = {
 
 #Set local site (AltAz)
 obs = obs_time()
-c = SkyCoord('22h50m0.19315s', '+24d36m05.6984s', frame='icrs')
+c = SkyCoord(ra=51.6712*u.degree, dec=8.3406*u.degree, frame='icrs')
 loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 
