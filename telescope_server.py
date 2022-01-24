@@ -170,7 +170,7 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     c = SkyCoord(ra = ra*u.degree, dec = dec*u.degree, frame='icrs')
     obs = obs_time()
     cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
-    return cAltAz.alt, cAltAz.az % (2*pi)
+    return cAltAz.alt, cAltAz.az
 
 # ====================
 # Meade LX200 Protocol
