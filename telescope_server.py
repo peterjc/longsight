@@ -316,7 +316,7 @@ def radians_to_sddmmss(angle):
         angle = abs(angle)
     else:
         sign = "+"
-    fraction, degrees = modf(angle / pi)
+    fraction, degrees = modf(angle * 90 / pi)
     fraction, arcminutes = modf(fraction * 60.0)
     if debug:
         sys.stdout.write("\nFUNCTION radians_to_sddmmss\n")
