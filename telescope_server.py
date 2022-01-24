@@ -111,6 +111,8 @@ def update_alt_az():
     #We don't care about the roll for the Meade LX200 protocol.
     if debug:
         sys.stdout.write("\nFUNCTION update_alt_az\n")
+        sys.stdout.write("local_az %r\n" % local_az)
+        sys.stdout.write("local_alt %r\n" % local_alt)
 
 def site_time_gmt_as_epoch():
     global local_time_offset
