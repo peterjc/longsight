@@ -15,23 +15,23 @@ Traceback (most recent call last):
     resp = command_map[cmd]()
   File "/home/pi/longsight/telescope_server.py", line 193, in meade_lx200_cmd_CM_sync
     target_alt, target_az = equatorial_to_alt_az(target_ra, target_dec)
-  File "/home/pi/longsight/telescope_server.py", line 170, in equatorial_to_alt_az
-    c = SkyCoord(ra, dec, frame='icrs')
-  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/sky_coordinate.py", line 331, in __init__
-    skycoord_kwargs, components, info = _parse_coordinate_data(
-  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/sky_coordinate_parsers.py", line 296, in _parse_coordinate_data
-    _components[frame_attr_name] = attr_class(arg, unit=unit)
-  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/angles.py", line 670, in __new__
-    self = super().__new__(cls, angle, unit=unit, **kwargs)
-  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/angles.py", line 138, in __new__
-    return super().__new__(cls, angle, unit, dtype=dtype, copy=copy,
-  File "/usr/local/lib/python3.9/dist-packages/astropy/units/quantity.py", line 526, in __new__
-    value._set_unit(value_unit)
-  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/angles.py", line 160, in _set_unit
-    super()._set_unit(self._convert_unit_to_angle_unit(unit))
-  File "/usr/local/lib/python3.9/dist-packages/astropy/units/quantity.py", line 1933, in _set_unit
-    raise UnitTypeError(
-astropy.units.core.UnitTypeError: Longitude instances require units equivalent to 'rad', but no unit was given.
+  File "/home/pi/longsight/telescope_server.py", line 172, in equatorial_to_alt_az
+    cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/builtin_frames/altaz.py", line 109, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/baseframe.py", line 314, in __init__
+    values[fnm] = getattr(self, fnm)
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/attributes.py", line 104, in __get__
+    out, converted = self.convert_input(out)
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/attributes.py", line 396, in convert_input
+    return itrsobj.earth_location, True
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/sky_coordinate.py", line 849, in __getattr__
+    if not attr.startswith('_') and hasattr(self._sky_coord_frame, attr):
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/builtin_frames/itrs.py", line 36, in earth_location
+    return EarthLocation(x=cart.x, y=cart.y, z=cart.z)
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/earth.py", line 207, in __new__
+    raise TypeError('Coordinates could not be parsed as either '
+TypeError: Coordinates could not be parsed as either geocentric or geodetic, with respective exceptions "Geocentric coordinates should be in units of length." and "from_geodetic() got an unexpected keyword argument 'x'"
 ```
 
 
