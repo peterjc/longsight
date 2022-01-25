@@ -435,12 +435,11 @@ def meade_lx200_cmd_St_set_latitude(value):
     Returns: 0 - Invalid, 1 - Valid
     """
     if debug:
-        sys.stderr.write("\nmeade_lx200_cmd_St_set_latitude: %s\n" % value)
+        sys.stderr.write("meade_lx200_cmd_St_set_latitude: %s\n" % value)
     #Expect this to be followed by an Sg command to set the longitude...
     global local_site, config
     try:
         value = value.replace("*", "d")
-        #local_site.latitude = coords.AngularCoordinate(value)
         local_site.latitude = value
         #That worked, should be safe to save the value to disk later...
         config.set("site", "latitude", value)
@@ -461,8 +460,7 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     global local_site, config
     try:
         value = value.replace("*", "d")
-        #local_site.longitude = coords.AngularCoordinate(value)
-        local_site.longitude = SkyCoord(value, unit='deg')
+        local_site.longitude = value
         sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n"
                          % (local_site.latitude.d, local_site.longitude.d))
         #That worked, should be safe to save the value to disk:
