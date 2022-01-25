@@ -16,6 +16,11 @@ Fast forward to 2022,
 
 This project is now an attempt to perseve the original hard work and begin to refactor the code. The needs I have are limited to the "Push To", image capturing and camera connection are not something I am focused on.
 
+# Current Progress
+
+- [Corrections to Date](corrections.md)
+- [Open Items](todo.md)
+
 # Sky Safari Plus
 
 Testing in the original project was done in Sky Safari Plus 4.0, current testing is in Sky Safari Plus 7.0
