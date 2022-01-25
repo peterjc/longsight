@@ -33,8 +33,9 @@ if not os.path.isfile(config_file):
     print("Using default settings")
     h = open("telescope_server.ini", "w")
     h.write("[server]\nname=127.0.0.1\nport=4030\n")
-    #Default to Greenwich as the site
+    #Default to Greenwich as the site, 1 as tz
     h.write("[site]\naddress=Greenwich\n")
+    h.write("[site]\ntz=1\n")
     #Default to no correction of the angles
     h.write("[offsets]\nazimuth=0\naltitude=0\n")
     h.close()
@@ -49,6 +50,7 @@ config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
 site_address = config.get("site", "address") #e.g. Greenwich
+site_tz = config.get("site", "tz") #e.g. 1
 
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
@@ -122,17 +124,17 @@ def site_time_gmt_as_datetime():
     return datetime.datetime.fromtimestamp(site_time_gmt_as_epoch())
 
 def site_time_local_as_datetime():
-    global local_site
+    global site_tz
     if debug:
-        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
-    return site_time_gmt_as_datetime() - datetime.timedelta(hours=local_site.tz)
+        sys.stdout.write("site_tz %r\n" % site_tz)
+    return site_time_gmt_as_datetime() - datetime.timedelta(hours=site_tz)
 
 def debug_time():
-    global local_site
+    global site_tz
     if debug:
-        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
+        sys.stdout.write("site_tz %r\n" % site_tz)
 
-    if local_site.tz:
+    if site_tz:
         sys.stderr.write("Effective site date/time is %s (local time), %s (GMT/UTC)\n"
                          % (site_time_local_as_datetime(), site_time_gmt_as_datetime()))
     else:
@@ -482,13 +484,13 @@ def meade_lx200_cmd_SG_set_local_timezone(value):
     """
     #Expected immediately after the set latitude and longitude commands
     #Seems the decimal is optional, e.g. :SG-00#
-    global local_site
+    global site_tz
     if debug:
-        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
+        sys.stdout.write("site_tz %r\n" % site_tz)
 
     try:
-        local_site.tz = float(value) # Can in theory be partial hour, so not int
-        sys.stderr.write("Local site timezone now %s\n" % local_site.tz)
+        site_tz = float(value) # Can in theory be partial hour, so not int
+        sys.stderr.write("Local site timezone now %s\n" % site_tz)
         return "1"
     except Exception as err:
         sys.stderr.write("Error with :SG%s# time zone: %s\n" % (value, err))
@@ -499,12 +501,12 @@ def meade_lx200_cmd_SL_set_local_time(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
-    global local_time_offset
+    global local_time_offset, site_tz
     local = time.time() + local_time_offset
     #e.g. :SL00:10:48#
     #Expect to be followed by an SC command to set the date.
     if debug:
-        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
+        sys.stdout.write("site_tz %r\n" % site_tz)
 
     try:
         hh, mm, ss = (int(v) for v in value.split(":"))
@@ -514,13 +516,13 @@ def meade_lx200_cmd_SL_set_local_time(value):
             raise ValueError("Bad minutes")
         if not (0 <= ss <= 59):
             raise ValueError("Bad seconds")
-        desired_seconds_since_midnight = 60*60*(hh + local_site.tz) + 60*mm + ss
+        desired_seconds_since_midnight = 60*60*(hh + site_tz) + 60*mm + ss
         t = time.gmtime(local)
         current_seconds_since_midnight = 60*60*t.tm_hour + 60*t.tm_min + t.tm_sec
         new_offset = desired_seconds_since_midnight - current_seconds_since_midnight
         local_time_offset += new_offset
         sys.stderr.write("Requested site time %i:%02i:%02i (TZ %s), new offset %is, total offset %is\n"
-                         % (hh, mm, ss, local_site.tz, new_offset, local_time_offset))
+                         % (hh, mm, ss, site_tz, new_offset, local_time_offset))
         debug_time()
         return "1"
     except ValueError as err:
