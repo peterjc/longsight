@@ -36,6 +36,8 @@ if not os.path.isfile(config_file):
     #Default to Greenwich as the site, 1 as tz
     h.write("[site]\naddress=Greenwich\n")
     h.write("[site]\ntz=1\n")
+    h.write("[site]\nlatitude=51.6712\n")
+    h.write("[site]\nlongitude=8.3406\n")
     #Default to no correction of the angles
     h.write("[offsets]\nazimuth=0\naltitude=0\n")
     h.close()
@@ -51,6 +53,8 @@ server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
 site_address = config.get("site", "address") #e.g. Greenwich
 site_tz = config.get("site", "tz") #e.g. 1
+site_latitude = config.get("site", "latitude") #e.g. 51.4176
+site_longitude = config.get("site", "longitude") #e.g. 8.1923
 
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
@@ -617,15 +621,15 @@ command_map = {
     ":U":  meade_lx200_cmd_U_precision_toggle,
 }
 
-#Set local site (AltAz)
+'''#Set local site (AltAz)
 obs = obs_time()
-c = SkyCoord(ra=51.6712*u.degree, dec=8.3406*u.degree, frame='icrs')
+c = SkyCoord(ra=site_latitude*u.degree, dec=site_longitude*u.degree, frame='icrs')
 loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 if debug:
     sys.stderr.write("\nSkycoord %s\n" % c)
     sys.stderr.write("\nloc %s\n" % loc)
-    sys.stderr.write("\local_site %s\n" % local_site)
+    sys.stderr.write("\local_site %s\n" % local_site)'''
 
 
 # Create a TCP/IP socket
