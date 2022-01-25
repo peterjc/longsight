@@ -618,16 +618,13 @@ command_map = {
 }
 
 #Set local site (AltAz)
-local_site = { 'latitude': 51.6712, 'longitude': 8.3406, 'ra': 51.6712, 'dec': 8.3406, 'alt': 51.6712, 'az': 8.3406 }
-'''
 obs = obs_time()
 c = SkyCoord(ra=51.6712*u.degree, dec=8.3406*u.degree, frame='icrs')
 loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = obs, location = loc))
-'''
 if debug:
-    #sys.stderr.write("\nSkycoord %s\n" % c)
-    #sys.stderr.write("\nloc %s\n" % loc)
+    sys.stderr.write("\nSkycoord %s\n" % c)
+    sys.stderr.write("\nloc %s\n" % loc)
     sys.stderr.write("\local_site %s\n" % local_site)
 
 
