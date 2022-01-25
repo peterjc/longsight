@@ -299,7 +299,7 @@ def radians_to_sddmm(angle):
         angle = abs(angle)
     else:
         sign = "+"
-    fraction, degrees = modf(angle * 180 / pi)
+    fraction, degrees = modf(angle / pi)
     return "%s%02i*%02i#" % (sign, degrees, round(fraction * 60.0))
 
 def radians_to_sddmmss(angle):

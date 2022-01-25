@@ -1,6 +1,7 @@
 # Items to Check once it runs
 - Did the refactoring to astropy provide the right values?
 - Is the perspective and the values all correct, Sky Safari seems off from the perspective I would expect.
+- *meade_lx200_cmd_St_set_latitude* and *meade_lx200_cmd_Sg_set_longitude* so far never called
 
 Lines *327, 342* for telescope to *alt_az_to_equatorial*
 Lines *184* for telescope to *equatorial_to_alt_az*
