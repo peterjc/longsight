@@ -454,6 +454,8 @@ def meade_lx200_cmd_Sg_set_longitude(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
+    if debug:
+        sys.stderr.write("meade_lx200_cmd_Sg_set_longitude: %s\n" % value)
     #Expected immediately after the set latitude command
     #e.g. :St+56*29# then :Sg003*08'#
     global local_site, config
