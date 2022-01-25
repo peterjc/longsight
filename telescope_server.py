@@ -435,7 +435,7 @@ def meade_lx200_cmd_St_set_latitude(value):
     Returns: 0 - Invalid, 1 - Valid
     """
     if debug:
-        sys.stderr.write("meade_lx200_cmd_St_set_latitude: %s\n" % value)
+        sys.stderr.write("\nmeade_lx200_cmd_St_set_latitude: %s\n" % value)
     #Expect this to be followed by an Sg command to set the longitude...
     global local_site, config
     try:
