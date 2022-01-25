@@ -123,10 +123,15 @@ def site_time_gmt_as_datetime():
 
 def site_time_local_as_datetime():
     global local_site
+    if debug:
+        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
     return site_time_gmt_as_datetime() - datetime.timedelta(hours=local_site.tz)
 
 def debug_time():
     global local_site
+    if debug:
+        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
+
     if local_site.tz:
         sys.stderr.write("Effective site date/time is %s (local time), %s (GMT/UTC)\n"
                          % (site_time_local_as_datetime(), site_time_gmt_as_datetime()))
@@ -478,6 +483,9 @@ def meade_lx200_cmd_SG_set_local_timezone(value):
     #Expected immediately after the set latitude and longitude commands
     #Seems the decimal is optional, e.g. :SG-00#
     global local_site
+    if debug:
+        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
+
     try:
         local_site.tz = float(value) # Can in theory be partial hour, so not int
         sys.stderr.write("Local site timezone now %s\n" % local_site.tz)
@@ -495,6 +503,9 @@ def meade_lx200_cmd_SL_set_local_time(value):
     local = time.time() + local_time_offset
     #e.g. :SL00:10:48#
     #Expect to be followed by an SC command to set the date.
+    if debug:
+        sys.stdout.write("local_site.tz %r\n" % local_site.tz)
+
     try:
         hh, mm, ss = (int(v) for v in value.split(":"))
         if not (0 <= hh <= 24):
@@ -605,17 +616,15 @@ command_map = {
 }
 
 #Set local site (AltAz)
-#obs = obs_time()
-#c = SkyCoord(ra=51.6712*u.degree, dec=8.3406*u.degree, frame='icrs')
-
-'''
+obs = obs_time()
+c = SkyCoord(ra=51.6712*u.degree, dec=8.3406*u.degree, frame='icrs')
 loc = EarthLocation.of_address(site_address)
 local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 if debug:
     sys.stderr.write("\nSkycoord %s\n" % c)
     sys.stderr.write("\nloc %s\n" % loc)
     sys.stderr.write("\local_site %s\n" % local_site)
-'''
+
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
