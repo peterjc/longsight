@@ -441,7 +441,7 @@ def meade_lx200_cmd_St_set_latitude(value):
     try:
         value = value.replace("*", "d")
         #local_site.latitude = coords.AngularCoordinate(value)
-        local_site.latitude = SkyCoord(value, unit='deg')
+        local_site.latitude = value
         #That worked, should be safe to save the value to disk later...
         config.set("site", "latitude", value)
         return "1"
