@@ -461,7 +461,7 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     try:
         value = value.replace("*", "d")
         local_site.longitude = value
-        #sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n" % local_site.latitude, local_site.longitude)
+        sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n" % local_site.latitude, local_site.longitude)
         #That worked, should be safe to save the value to disk:
         config.set("site", "longitude", value)
         save_config()
