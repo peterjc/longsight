@@ -618,7 +618,7 @@ command_map = {
 }
 
 #Set local site (AltAz)
-local_site = { 'latitude': 51.6712, 'longitude': 8.3406 }
+local_site = { 'latitude': 51.6712, 'longitude': 8.3406, 'ra': 51.6712, 'dec': 8.3406, 'alt': 51.6712, 'az': 8.3406 }
 '''
 obs = obs_time()
 c = SkyCoord(ra=51.6712*u.degree, dec=8.3406*u.degree, frame='icrs')
