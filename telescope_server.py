@@ -155,6 +155,46 @@ def greenwich_sidereal_time_in_radians():
 
 def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("FUNCTION alt_az_to_equatorial - passed values: alt %r - az %r" % (alt, az))
+    global site_longitude, site_latitude #and time offset used too
+    if gst is None:
+        gst = greenwich_sidereal_time_in_radians()
+    lat = site_latitude * pi / 180
+    #Calculate these once only for speed
+    sin_lat = sin(lat)
+    cos_lat = cos(lat)
+    sin_alt = sin(alt)
+    cos_alt = cos(alt)
+    sin_az = sin(az)
+    cos_az = cos(az)
+    dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
+    hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
+    if sin_az > 0.0:
+        hours_in_rad = 2*pi - hours_in_rad
+    ra = gst - (site_longitude * pi / 180) - hours_in_rad
+    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
+    return ra % (pi*2), dec
+
+def equatorial_to_alt_az(ra, dec, gst=None):
+    debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
+    global site_longitude, site_latitude #and time offset used too
+    if gst is None:
+        gst = greenwich_sidereal_time_in_radians()
+    lat = site_latitude * pi / 180
+    #Calculate these once only for speed
+    sin_lat = sin(lat)
+    cos_lat = cos(lat)
+    sin_dec = sin(dec)
+    cos_dec = cos(dec)
+    h = gst - (site_longitude * pi / 180) - ra
+    sin_h = sin(h)
+    cos_h = cos(h)
+    alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
+    az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
+    debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (alt, az % (2*pi)))
+    return alt, az % (2*pi)
+
+'''def alt_az_to_equatorial(alt, az, gst=None):
+    debug_info("FUNCTION alt_az_to_equatorial - passed values: alt %r - az %r" % (alt, az))
     global local_site 
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
@@ -173,7 +213,7 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     obs = obs_time()
     cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
     debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (cAltAz.alt, cAltAz.az))
-    return cAltAz.alt, cAltAz.az
+    return cAltAz.alt, cAltAz.az'''
 
 # ====================
 # Meade LX200 Protocol
