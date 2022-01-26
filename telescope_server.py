@@ -82,6 +82,10 @@ def save_config():
     with open(config_file, "w") as handle:
         config.write(handle)
 
+def debug_info(str):
+    if debug:
+        sys.stdout.write("%s" % str)
+
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
         assert isinstance(b, (tuple, list))
@@ -115,10 +119,7 @@ def update_alt_az():
     #Altitude is measured upwards
     local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
-    if debug:
-        sys.stdout.write("\nFUNCTION update_alt_az\n")
-        sys.stdout.write("local_az %r\n" % local_az)
-        sys.stdout.write("local_alt %r\n" % local_alt)
+    debug_info("\nFUNCTION update_alt_az\nlocal_az %r\nlocal_alt %r\n" % local_az, local_alt )
 
 def site_time_gmt_as_epoch():
     global local_time_offset
@@ -129,8 +130,7 @@ def site_time_gmt_as_datetime():
 
 def site_time_local_as_datetime():
     global site_tz
-    if debug:
-        sys.stdout.write("site_tz %r\n" % site_tz)
+    debug_info("\nsite_tz %r\n" % site_tz)
     return site_time_gmt_as_datetime() - datetime.timedelta(hours=site_tz)
 
 def debug_time():
