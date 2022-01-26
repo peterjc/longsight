@@ -37,3 +37,16 @@ Set Time & Location: On (default is off)
 Readout Rate: 4 per second (default)
 Save Log File: Off (default)
 ```
+
+# Tools 
+
+In order to try and understand Latitude and Longitude, and how to convert that to degrees and then to radians
+
+- [Decimal Degrees Units to Degrees, Minutes and Seconds Converter](https://www.engineeringtoolbox.com/latitude-longitude-d_1371.html)
+- [Converting degrees to radians and vice versa](https://planetcalc.com/71/)
+
+Example Greenwich
+- 51.4934° N, 0.0098° E
+- > Latitude : 51 deg 29 min 36.24 sec
+  > Longitude: 0 deg 0 min 35.28 sec
+- Radians 0.898729 0.000171
