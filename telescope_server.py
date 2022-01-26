@@ -158,12 +158,13 @@ def alt_az_to_equatorial(alt, az, gst=None):
     global site_longitude, site_latitude, location #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    lat = Angle(location.geodetic.lat, u.radian)
-    debug_info("deterime ra from latitude: %s" % lat.radian)
-    tmpdec = Angle(az * u.deg)
-    tmpdec.wrap_at('90d', inplace=True)
-    debug_info("wrap at 90d: %s" % tmpdec.radian)
-
+    ra = Angle(location.geodetic.lat, u.radian)
+    debug_info("deterime ra from latitude: %s" % ra.radian)
+    dec = Angle(az * u.deg)
+    dec.wrap_at('90d', inplace=True)
+    debug_info("wrap at 90d: %s" % dec.radian)
+    
+    ''' 
     #Calculate these once only for speed
     sin_lat = sin(lat.radian)
     cos_lat = cos(lat.radian)
@@ -176,8 +177,9 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
     ra = gst - (tmpdec.radian * pi / 180) - hours_in_rad
-    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra, dec))
-    return ra, dec
+    '''
+    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra.radian, dec.radian))
+    return ra.radian, dec.radian
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
