@@ -186,6 +186,7 @@ def meade_lx200_cmd_CM_sync():
     LX200's - a "#" terminated string with the name of the object that was synced.
     Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_CM_sync\n")
     #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
     global offset_alt, offset_az
     global local_alt, local_az, target_alt, target_dec
@@ -214,6 +215,7 @@ def meade_lx200_cmd_MS_move_to_target():
     1<string># - Object Below Horizon w/string message
     2<string># - Object Below Higher w/string message
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_MS_move_to_target\n")
     #SkySafari's "goto" command sends this after a pair of :Sr# and :Sd# commands.
     #For return code 1 and 2 the error message is not shown, simply that the
     #target is below the horizon (1) or out of reach of the mount (2).
@@ -225,6 +227,7 @@ def meade_lx200_cmd_MS_move_to_target():
 
 def parse_hhmm(value):
     """Turn string HH:MM.T or HH:MM:SS into radians."""
+    debug_info("\nFUNCTION parse_hhmm\n")
     parts = value.split(":")
     if len(parts) == 2:
         h = int(parts[0])
@@ -242,6 +245,7 @@ _check_close(parse_hhmm("12:00:00"), pi)
 
 def parse_sddmm(value):
     """Turn string sDD*MM or sDD*MM:SS into radians."""
+    debug_info("\nFUNCTION parse_sddmm\n")
     if value[3] != "*":
         if len(value) == 9 and value[3] == chr(223) and value[6] == ":":
             # Stellarium's variant in v0.12.4, since fixed:
@@ -275,6 +279,7 @@ _check_close(parse_hhmm("07:01:55"), 1.84096) # RA
 _check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
 
 def radians_to_hms(angle):
+    debug_info("\nFUNCTION radians_to_hms\n")
     fraction, hours = modf(angle * 12 / pi)
     fraction, minutes = modf(fraction * 60)
     return hours, minutes, fraction * 60
@@ -282,6 +287,7 @@ _check_close(radians_to_hms(0.01), (0, 2, 17.50987083139755))
 _check_close(radians_to_hms(6.28), (23.0, 59.0, 16.198882117679716))
 
 def radians_to_hhmmss(angle):
+    debug_info("\nFUNCTION radians_to_hhmmss\n")
     while angle < 0.0:
         sys.stderr.write("Warning, radians_to_hhmmss called with %0.2f\n" % angle)
         angle += 2*pi
@@ -289,6 +295,7 @@ def radians_to_hhmmss(angle):
     return "%02i:%02i:%02i#" % (h, m, round(s))
 
 def radians_to_hhmmt(angle):
+    debug_info("\nFUNCTION radians_to_hhmmt\n")
     while angle < 0.0:
         sys.stderr.write("Warning, radians_to_hhmmt called with %0.2f\n" % angle)
         angle += 2*pi
@@ -297,6 +304,7 @@ def radians_to_hhmmt(angle):
 
 def radians_to_sddmm(angle):
     """Signed degrees, arc-minutes as sDD*MM# for protocol."""
+    debug_info("\nFUNCTION radians_to_sddmm\n")
     if angle < 0.0:
         sign = "-"
         angle = abs(angle)
@@ -314,6 +322,7 @@ def radians_to_sddmmss(angle):
     degress: 30.0
     return: -30*28:02#
     """
+    debug_info("\nFUNCTION radians_to_sddmmss - passed values: %s\n")
     if angle < 0.0:
         sign = "-"
         angle = abs(angle)
@@ -321,13 +330,8 @@ def radians_to_sddmmss(angle):
         sign = "+"
     fraction, degrees = modf(angle / pi)
     fraction, arcminutes = modf(fraction * 60.0)
-    if debug:
-        sys.stdout.write("\nFUNCTION radians_to_sddmmss\n")
-        sys.stdout.write("angle: %s\n" % angle)
-        sys.stdout.write("fraction: %s\n" % fraction)
-        sys.stdout.write("degress: %s\n" % degrees)
-        sys.stdout.write("arcminutes: %s\n" % arcminutes)
-        sys.stdout.write("return: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
+    debug_info("\nFUNCTION radians_to_sddmmss - actual values: angle = %s, fraction = %s, degrees = %s, arcminutes = %s\n" % (angle, fraction, degrees, arcminutes))
+    debug_info("\nFUNCTION radians_to_sddmmss - return values: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
 '''
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
@@ -349,6 +353,7 @@ def meade_lx200_cmd_GR_get_ra():
     Depending which precision is set for the telescope
     """
     #TODO - Since :GR# and :GD# commands normally in pairs, cache this?
+    debug_info("\nFUNCTION meade_lx200_cmd_GR_get_ra\n")
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if high_precision:
@@ -364,6 +369,7 @@ def meade_lx200_cmd_GD_get_dec():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_GD_get_dec\n")
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if debug:
@@ -384,6 +390,7 @@ def meade_lx200_cmd_Sr_set_target_ra(value):
     Stellarium breaks the specification and sends things like ':Sr 20:39:38#'
     with an extra space.
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_Sr_set_target_ra - passed values: %s\n" % value)
     global target_ra
     try:
         target_ra = parse_hhmm(value.strip()) # Remove any space added by Stellarium
@@ -405,6 +412,7 @@ def meade_lx200_cmd_Sd_set_target_de(value):
     with an extra space, and the wrong characters. Apparently chr(223) is the
     degrees symbol on some character sets.
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_Sd_set_target_de - passed values: %s\n" % value)
     global target_dec
     try:
         target_dec = parse_sddmm(value.strip()) # Remove any space added by Stellarium
@@ -424,6 +432,7 @@ def meade_lx200_cmd_U_precision_toggle():
 
     Returns Nothing
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_U_precision_toggle\n")
     global high_precision
     high_precision = not high_precision
     if high_precision:
@@ -437,7 +446,7 @@ def meade_lx200_cmd_St_set_latitude(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
-    debug_info("\nFUNCTION meade_lx200_cmd_St_set_latitude %s\n" % value )
+    debug_info("\nFUNCTION meade_lx200_cmd_St_set_latitude - passed value: %s\n" % value )
     #Expect this to be followed by an Sg command to set the longitude...
     global local_site, config
     try:
@@ -455,8 +464,7 @@ def meade_lx200_cmd_Sg_set_longitude(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
-    if debug:
-        sys.stderr.write("meade_lx200_cmd_Sg_set_longitude: %s\n" % value)
+    debug_info("\nFUNCTION meade_lx200_cmd_Sg_set_longitude - passed value: %s\n" % value )
     #Expected immediately after the set latitude command
     #e.g. :St+56*29# then :Sg003*08'#
     global local_site, config
@@ -479,10 +487,8 @@ def meade_lx200_cmd_SG_set_local_timezone(value):
     """
     #Expected immediately after the set latitude and longitude commands
     #Seems the decimal is optional, e.g. :SG-00#
+    debug_info("\nFUNCTION meade_lx200_cmd_SG_set_local_timezone - passed values: site_tz = %s\n" % value )
     global site_tz
-    if debug:
-        sys.stdout.write("site_tz %r\n" % site_tz)
-
     try:
         site_tz = float(value) # Can in theory be partial hour, so not int
         sys.stderr.write("Local site timezone now %s\n" % site_tz)
@@ -496,6 +502,7 @@ def meade_lx200_cmd_SL_set_local_time(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_SL_set_local_time - passed values: %s\n" % value )
     global local_time_offset, site_tz
     local = time.time() + local_time_offset
     #e.g. :SL00:10:48#
@@ -535,6 +542,7 @@ def meade_lx200_cmd_SC_set_local_date(value):
 
     Note: For LX200GPS/RCX400/Autostar II this is the UTC data!
     """
+    debug_info("\nFUNCTION meade_lx200_cmd_SC_set_local_date - passed values: %s\n" % value )
     #Expected immediately after an SL command setting the time.
     #
     #Exact list of values from http://www.dv-fansler.com/FTP%20Files/Astronomy/LX200%20Hand%20Controller%20Communications.pdf
@@ -642,9 +650,8 @@ while True:
             if not data:
                 imu.update()
                 break
-            if debug:
-                sys.stdout.write("Processing %r\n" % data)
-                #For stacked commands like ":RS#:GD#",
+            #For stacked commands like ":RS#:GD#",
+            debug_info("Processing %r\n" % data)
             while data:
                 while data[0:1] == "#":
                     #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
@@ -665,18 +672,15 @@ while True:
                     sys.stderr.write("Eh? No command?\n")
                 elif cmd in command_map:
                     if value:
-                        if debug:
-                            sys.stdout.write("Command %r, argument %r\n" % (cmd, value))
+                        debug_info("Command %r, argument %r\n" % (cmd, value))
                         resp = command_map[cmd](value)
                     else:
                         resp = command_map[cmd]()
                     if resp:
-                        if debug:
-                            sys.stdout.write("Command %r, sending %r\n" % (cmd, resp))
+                        debug_info("Command %r, sending %r\n" % (cmd, resp))
                         connection.sendall(resp.encode())
                     else:
-                        if debug:
-                            sys.stdout.write("Command %r, no response\n" % cmd)
+                        debug_info("Command %r, no response\n" % cmd)
                 else:
                     sys.stderr.write("Unknown command %r, from %r (data %r)\n" % (cmd, raw_cmd, data))
     finally:
