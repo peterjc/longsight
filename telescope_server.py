@@ -159,14 +159,14 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
  
-    lat = Angle(location.geodetic.lat)
-    debug_info("deterime ra from latitude: %s" % lat)
+    lat = Angle(location.geodetic.lat, u.radian)
+    debug_info("deterime ra from latitude: %s" % lat.radian)
 
     #lat = site_latitude * pi / 180
 
     #Calculate these once only for speed
-    sin_lat = sin(lat)
-    cos_lat = cos(lat)
+    sin_lat = sin(lat.radian)
+    cos_lat = cos(lat.radian)
     sin_alt = sin(alt)
     cos_alt = cos(alt)
     sin_az = sin(az)
