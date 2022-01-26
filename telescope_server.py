@@ -164,6 +164,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("deterime dec from az: %s" % tmpdec)
     tmpdec.wrap_at('90d', inplace=True)
     debug_info("wrap at 90d: %s" % tmpdec)
+    debug_info("wrap at 90d: %s" % tmpdec.radian)
 
     #Calculate these once only for speed
     sin_lat = sin(lat.radian)
