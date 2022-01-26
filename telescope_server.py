@@ -161,9 +161,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     lat = Angle(location.geodetic.lat, u.radian)
     debug_info("deterime ra from latitude: %s" % lat.radian)
     tmpdec = Angle(az * u.deg)
-    debug_info("deterime dec from az: %s" % tmpdec)
     tmpdec.wrap_at('90d', inplace=True)
-    debug_info("wrap at 90d: %s" % tmpdec)
     debug_info("wrap at 90d: %s" % tmpdec.radian)
 
     #Calculate these once only for speed
@@ -177,7 +175,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
-    ra = gst - (tmpdec * pi / 180) - hours_in_rad
+    ra = gst - (tmpdec.radian * pi / 180) - hours_in_rad
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra, dec))
     return ra, dec
 
