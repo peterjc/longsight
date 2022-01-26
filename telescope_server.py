@@ -120,7 +120,7 @@ def update_alt_az():
     #Altitude is measured upwards
     local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
-    debug_info("FUNCTION update_alt_az - local_az %r - local_alt %r" % (local_az, local_alt) )
+    debug_info("FUNCTION update_alt_az - local_alt %r - local_aaz %r" % (local_alt, local_az) )
 
 def site_time_gmt_as_epoch():
     global local_time_offset
@@ -159,9 +159,9 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
  
-    lat = Angle(location.geodetic.lat, u.radian)
+    lat = Angle(location.geodetic.lat)
     debug_info("deterime ra from latitude: %s" % lat)
-    
+
     #lat = site_latitude * pi / 180
 
     #Calculate these once only for speed
