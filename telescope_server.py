@@ -84,7 +84,7 @@ def save_config():
 
 def debug_info(str):
     if debug:
-        sys.stdout.write("\n%s\n" % str)
+        sys.stdout.write("%s\n" % str)
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
