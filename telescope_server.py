@@ -102,6 +102,7 @@ def _check_close(a, b, error=0.0001):
                          % (a, b, diff, error))
 
 def obs_time():
+    debug_info("\nFUNCTION obs_time\n")
     now = dt.now()
     times = [now]
     t = Time(times, scale='utc')
@@ -119,25 +120,25 @@ def update_alt_az():
     #Altitude is measured upwards
     local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
-    debug_info("\nFUNCTION update_alt_az\nlocal_az %r\nlocal_alt %r\n" % local_az, local_alt )
+    debug_info("\nFUNCTION update_alt_az - local_az %r - local_alt %r\n" % (local_az, local_alt) )
 
 def site_time_gmt_as_epoch():
     global local_time_offset
+    debug_info("\nFUNCTION site_time_gmt_as_epoch\n")
     return time.time() + local_time_offset
 
 def site_time_gmt_as_datetime():
+    debug_info("\nFUNCTION site_time_gmt_as_datetime\n")
     return datetime.datetime.fromtimestamp(site_time_gmt_as_epoch())
 
 def site_time_local_as_datetime():
     global site_tz
-    debug_info("\nsite_tz %r\n" % site_tz)
+    debug_info("\nFUNCTION site_time_local_as_datetime - site_tz %r\n" % site_tz)
     return site_time_gmt_as_datetime() - datetime.timedelta(hours=site_tz)
 
 def debug_time():
     global site_tz
-    if debug:
-        sys.stdout.write("site_tz %r\n" % site_tz)
-
+    debug_info("\nFUNCTION debug_time - site_tz %r\n" % site_tz)
     if site_tz:
         sys.stderr.write("Effective site date/time is %s (local time), %s (GMT/UTC)\n"
                          % (site_time_local_as_datetime(), site_time_gmt_as_datetime()))
@@ -149,38 +150,29 @@ def greenwich_sidereal_time_in_radians():
     now = dt.now()
     times = [now]
     t = Time(times, scale='utc')
+    debug_info("\nFUNCTION greenwich_sidereal_time_in_radians - value %r\n" % t.sidereal_time('apparent', 'greenwich'))
     return t.sidereal_time('apparent', 'greenwich')
 
 def alt_az_to_equatorial(alt, az, gst=None):
-    if debug:
-        sys.stdout.write("\nFUNCTION alt_az_to_equatorial\n")
-        sys.stdout.write("alt %r\n" % alt)
-        sys.stdout.write("az %r\n" % az)
-    global local_site #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
+    debug_info("\nFUNCTION alt_az_to_equatorial - passed values: alt %r - az %r\n" % (alt, az))
+    global local_site 
     obs = obs_time()
     newAltAzcoordiantes = SkyCoord(alt = local_site.alt, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
     alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
     az = Angle([newAltAzcoordiantes.az] * u.deg)
     az.wrap_at('90d', inplace=True)
-    if debug:
-        sys.stdout.write("Actual Values\n")
-        sys.stdout.write("ra %r\n" % alt.radian[0][0])
-        sys.stdout.write("dec %r\n" % az.degree[0][0])
+    debug_info("\nFUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r\n" % (ra, dec))
     return alt.radian[0][0], az.degree[0][0]
 
 def equatorial_to_alt_az(ra, dec, gst=None):
-    if debug:
-        sys.stdout.write("\nFUNCTION equatorial_to_alt_az\n")
-        sys.stdout.write("ra %r\n" % ra)
-        sys.stdout.write("dec %r\n" % dec)
+    debug_info("\nFUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r\n" % (ra, dec))
     global local_site #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     c = SkyCoord(ra = ra*u.degree, dec = dec*u.degree, frame='icrs')
     obs = obs_time()
     cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
+    debug_info("\nFUNCTION equatorial_to_alt_az - returned values: alt %r - az %r\n" % (cAltAz.alt, cAltAz.az))
     return cAltAz.alt, cAltAz.az
 
 # ====================
