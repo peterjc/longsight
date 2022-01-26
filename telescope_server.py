@@ -448,10 +448,10 @@ def meade_lx200_cmd_St_set_latitude(value):
     """
     debug_info("FUNCTION meade_lx200_cmd_St_set_latitude - passed value: %s" % value )
     #Expect this to be followed by an Sg command to set the longitude...
-    global local_site, config
+    global config, site_latitude
     try:
         value = value.replace("*", "d")
-        local_site.latitude = value
+        site_latitude = value
         #That worked, should be safe to save the value to disk later...
         config.set("site", "latitude", value)
         return "1"
@@ -467,11 +467,11 @@ def meade_lx200_cmd_Sg_set_longitude(value):
     debug_info("FUNCTION meade_lx200_cmd_Sg_set_longitude - passed value: %s" % value )
     #Expected immediately after the set latitude command
     #e.g. :St+56*29# then :Sg003*08'#
-    global local_site, config
+    global config, site_latitude, site_longitude
     try:
         value = value.replace("*", "d")
-        local_site.longitude = value
-        sys.stderr.write("Local site now latitude %s, longitude %s\n" % (local_site.latitude, local_site.longitude))
+        site_longitude = value
+        sys.stderr.write("Local site now latitude %s, longitude %s\n" % (site_latitude, site_longitude))
         #That worked, should be safe to save the value to disk:
         config.set("site", "longitude", value)
         save_config()
