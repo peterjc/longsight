@@ -160,6 +160,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
         gst = greenwich_sidereal_time_in_radians()
  
     lat = Angle(location.geodetic.lat, u.radian)
+    debug_info("deterime ra from latitude: %s" % lat)
+    
     #lat = site_latitude * pi / 180
 
     #Calculate these once only for speed
