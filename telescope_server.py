@@ -155,10 +155,13 @@ def greenwich_sidereal_time_in_radians():
 
 def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("FUNCTION alt_az_to_equatorial - passed values: alt %r - az %r" % (alt, az))
-    global site_longitude, site_latitude #and time offset used too
+    global site_longitude, site_latitude, location #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    lat = site_latitude * pi / 180
+ 
+    lat = Angle(location.geodetic.lat, u.radian)
+    #lat = site_latitude * pi / 180
+
     #Calculate these once only for speed
     sin_lat = sin(lat)
     cos_lat = cos(lat)
@@ -171,8 +174,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
     ra = gst - (site_longitude * pi / 180) - hours_in_rad
-    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
-    return ra % (pi*2), dec
+    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra, dec))
+    return ra, dec
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
@@ -657,16 +660,13 @@ command_map = {
     ":U":  meade_lx200_cmd_U_precision_toggle,
 }
 
-'''#Set local site (AltAz)
+#Set local site (AltAz)
 obs = obs_time()
-c = SkyCoord(ra=site_latitude*u.degree, dec=site_longitude*u.degree, frame='icrs')
-loc = EarthLocation.of_address(site_address)
-local_site = c.transform_to(AltAz(obstime = obs, location = loc))
-if debug:
-    sys.stderr.write("\nSkycoord %s\n" % c)
-    sys.stderr.write("\nloc %s\n" % loc)
-    sys.stderr.write("\local_site %s\n" % local_site)'''
+location = EarthLocation.of_address(site_address)
+debug_info("Location %r" % location)
 
+#c = SkyCoord(ra=site_latitude*u.degree, dec=site_longitude*u.degree, frame='icrs')
+#local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
