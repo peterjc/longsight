@@ -18,8 +18,8 @@ This project is now an attempt to perseve the original hard work and begin to re
 
 # Current Progress
 
-- [Corrections to Date](corrections.md)
-- [Open Items](todo.md)
+- [Corrections to Date](results/corrections.md)
+- [Open Items](results/todo.md)
 
 # Sky Safari Plus
 
