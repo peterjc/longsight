@@ -127,8 +127,8 @@ if not os.path.isfile(config_file):
     #Default to Greenwich as the site, 1 as tz
     h.write("[site]\naddress=Greenwich\n")
     h.write("[site]\ntz=1\n")
-    h.write("[site]\nlatitude=51.6712\n")
-    h.write("[site]\nlongitude=8.3406\n")
+    h.write("[site]\nlatitude=51.4934\n")
+    h.write("[site]\nlongitude=0.0098\n")
     #Default to no correction of the angles
     h.write("[offsets]\nazimuth=0\naltitude=0\n")
     h.close()
