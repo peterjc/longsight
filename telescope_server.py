@@ -184,9 +184,11 @@ def alt_az_to_equatorial(alt, az, gst=None):
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
-    global site_longitude, site_latitude #and time offset used too
+    global site_longitude, site_latitude, location #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
+
+    #lat = Angle(location.geodetic.lat, u.radian)
     lat = site_latitude * pi / 180
     #Calculate these once only for speed
     sin_lat = sin(lat)
