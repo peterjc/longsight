@@ -47,15 +47,8 @@ local_time_offset = 0
 I believe the following is the correct way using *astropy*
 
 ```
-#Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
-now = dt.now()
-times = [now]
-t = Time(times, scale='utc')
-obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
-location = location = EarthLocation.of_address('Greenwich')
-frame = AltAz(obstime=obstime, location=location)
-# Or is this simply what is needed, is this the same as the old obstools.Site?
-local_site = coord.EarthLocation.of_address('Greenwich')
+obs = obs_time()
+location = EarthLocation.of_address(site_address)
 ```
 
 The next major code portion was with lines *191-197*
@@ -74,7 +67,7 @@ I believe the following is the correct way using *astropy*
 
 ```
 def greenwich_sidereal_time_in_radians():
-    return t.sidereal_time('apparent', 'greenwich') 
+    return t.sidereal_time('apparent', 'greenwich').radian[0] 
 ```
 
 The next items were in the *def alt_az_to_equatorial* and *def equatorial_to_alt_az(ra, dec, gst=None):* and are related to getting the latitude and longitude of the local_site object.
@@ -83,37 +76,30 @@ If correct then this should be the solution
 
 ```
 def alt_az_to_equatorial(alt, az, gst=None):
-    global local_site #and time offset used too
+    global site_longitude, site_latitude, location #and time offset used too
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
-    #lat = local_site.latitude.r
-    lat = local_site.lat.value
+
+    lat = Angle(location.geodetic.lat, u.radian)
     #Calculate these once only for speed
-    sin_lat = sin(lat)
-    cos_lat = cos(lat)
+    sin_lat = sin(lat.radian)
+    cos_lat = cos(lat.radian)
     sin_alt = sin(alt)
     cos_alt = cos(alt)
     sin_az = sin(az)
     cos_az = cos(az)
+    # DEC based on latitude in radians
     dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
     hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
     if sin_az > 0.0:
         hours_in_rad = 2*pi - hours_in_rad
-    #ra = gst - local_site.longitude.r - hours_in_rad
-    ra = gst - local_site.lon.value - hours_in_rad
+    # Now figure out RA based on Longitude in Radians
+    lon = Angle(site_longitude, u.radian)
+    ra = gst - lon.radian - hours_in_rad
     return ra % (pi*2), dec
 
 def equatorial_to_alt_az(gst=None):
-    global local_site #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
-    location = EarthLocation(lat=local_site.lat, lon=local_site.lon, height=0*u.m)
-    now = dt.now()
-    times = [now]
-    t = Time(times, scale='utc')
-    obs_time = Time(t)
-    alt_az_frame = AltAz(location=location, obstime=obs_time) 
-    return alt_az_frame
+    > PENDING
 ```
 
 With Python 3 socket connection handling changed slightly.
