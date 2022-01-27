@@ -183,7 +183,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
     lon = Angle(site_longitude, u.radian)
     debug_info("FUNCTION alt_az_to_equatorial - lon: %s" % lon.radian)
     debug_info("FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad")
-    ra = gst[0] - lon.radian - hours_in_rad
+    #ra = gst[0] - lon.radian - hours_in_rad
+    ra = lon.radian - hours_in_rad
     debug_info("FUNCTION alt_az_to_equatorial - RA from longitude: %s" % dec)
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
     return ra % (pi*2), dec
