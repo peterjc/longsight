@@ -11,7 +11,7 @@ from astropysics import obstools
 *astropysics* is no longer maintained and the work has been invested into *astropy*
 
 ```
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude, Angle
 from astropy import coordinates as coord
 from astropy.time import Time
 from astropy import units as u
@@ -114,3 +114,33 @@ Slight modification to line *751* and *791*
 ```
 connection.sendall(resp.encode())
 ```
+
+Configuration section has been altered and changed, extended variables
+
+```
+print("Checking Configuration")
+config_file = "telescope_server.ini"
+if not os.path.isfile(config_file):
+    print("Using default settings")
+    h = open("telescope_server.ini", "w")
+    h.write("[server]\nname=127.0.0.1\nport=4030\n")
+    #Default to Greenwich as the site, 1 as tz
+    h.write("[site]\naddress=Greenwich\n")
+    h.write("[site]\ntz=1\n")
+    h.write("[site]\nlatitude=51.6712\n")
+    h.write("[site]\nlongitude=8.3406\n")
+    #Default to no correction of the angles
+    h.write("[offsets]\nazimuth=0\naltitude=0\n")
+    h.close()
+```
+To help with debugging, and I added a lot of debugging statements
+
+```
+def debug_info(str):
+    if debug:
+        sys.stdout.write("%s\n" % str)
+```
+
+Usage is 
+
+> debug_info("FUNCTION update_alt_az - local_alt %r - local_aaz %r" % (local_alt, local_az) )
