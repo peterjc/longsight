@@ -169,9 +169,7 @@ def alt_az_to_equatorial(alt, az, gst=None):
     sin_az = sin(az)
     cos_az = cos(az)
     # DEC based on latitude in radians
-    #dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
-    dec = Angle(az * u.deg)
-    dec.wrap_at('90d', inplace=True)
+    dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
 
     debug_info("FUNCTION alt_az_to_equatorial - DEC from latitude: %s" % dec.radian)
     hours_in_rad = acos((sin_alt - sin_lat*sin(dec.radian)) / (cos_lat*cos(dec.radian)))
@@ -179,8 +177,11 @@ def alt_az_to_equatorial(alt, az, gst=None):
         hours_in_rad = 2*pi - hours_in_rad
 
     # Now figure out RA based on Longitude in Radians
-    #ra = gst - site_longitude - hours_in_rad
-    ra = lat.radian
+    debug_info("FUNCTION alt_az_to_equatorial - gste: %s" % gst)
+    debug_info("FUNCTION alt_az_to_equatorial - hours_in_rad: %s" % hours_in_rad)
+    debug_info("FUNCTION alt_az_to_equatorial - site_longitude: %s" % site_longitude)
+
+    ra = gst - site_longitude - hours_in_rad
     debug_info("FUNCTION alt_az_to_equatorial - RA from longitude: %s" % dec.radian)
 
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec.radian))
