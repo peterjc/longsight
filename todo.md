@@ -8,13 +8,13 @@ Lines *184* for telescope to *equatorial_to_alt_az*
 
 # Pending Items to Solve
 
-> UNCTION alt_az_to_equatorial - gst: [7h41m02.26394328s]
+> UNCTION alt_az_to_equatorial - gst: 7h41m02.26394328s
 > FUNCTION alt_az_to_equatorial - hours_in_rad: 3.4434746708437443
 > FUNCTION alt_az_to_equatorial - site_longitude: 351d40
 > FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
 > FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
 
-Crash on formula
+Crash on formula *gst* is in hours and minutes, first need to get it to all seconds, then convert to radians.
 
 ```
 Traceback (most recent call last):
