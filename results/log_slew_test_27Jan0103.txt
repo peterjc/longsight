@@ -1,0 +1,102 @@
+Checking Configuration
+Connecting to sensors...
+Connected to MPU9250 sensor
+Opening network port...
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_sddmm
+FUNCTION parse_sddmm
+FUNCTION parse_sddmm
+FUNCTION parse_sddmm
+FUNCTION parse_hhmm
+FUNCTION parse_sddmm
+FUNCTION radians_to_hms
+FUNCTION radians_to_hms
+FUNCTION obs_time
+Location <EarthLocation (3921431.60482752, 575374.18961213, 4980439.59675698) m>
+
+Starting up on 192.168.86.42 port 4030
+Processing ':St+51*40#'
+Command ':St', argument '+51*40'
+FUNCTION meade_lx200_cmd_St_set_latitude - passed value: +51*40
+Command ':St', sending '1'
+Processing ':Sg351*40#'
+Command ':Sg', argument '351*40'
+FUNCTION meade_lx200_cmd_Sg_set_longitude - passed value: 351*40
+Local site now latitude +51d40, longitude 351d40
+Command ':Sg', sending '1'
+Processing ':SG-01.0#'
+Command ':SG', argument '-01.0'
+FUNCTION meade_lx200_cmd_SG_set_local_timezone - passed values: site_tz = -01.0
+Local site timezone now -1.0
+Command ':SG', sending '1'
+Processing ':SG-01.0#'
+Command ':SG', argument '-01.0'
+FUNCTION meade_lx200_cmd_SG_set_local_timezone - passed values: site_tz = -01.0
+Local site timezone now -1.0
+Command ':SG', sending '1'
+Processing ':SL01:02:29#'
+Command ':SL', argument '01:02:29'
+FUNCTION meade_lx200_cmd_SL_set_local_time - passed values: 01:02:29
+Requested site time 1:02:29 (TZ -1.0), new offset 0s, total offset 0s
+FUNCTION debug_time - site_tz -1.0
+FUNCTION site_time_local_as_datetime - site_tz -1.0
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+Effective site date/time is 2022-01-27 02:02:29.343210 (local time), 2022-01-27 01:02:29.343619 (GMT/UTC)
+Command ':SL', sending '1'
+Processing ':SC01/27/22#'
+Command ':SC', argument '01/27/22'
+FUNCTION meade_lx200_cmd_SC_set_local_date - passed values: 01/27/22
+Requested site date 01/27/22 (MM/DD/YY) gives offset of 0 days
+FUNCTION debug_time - site_tz -1.0
+FUNCTION site_time_local_as_datetime - site_tz -1.0
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+Effective site date/time is 2022-01-27 02:02:29.400176 (local time), 2022-01-27 01:02:29.400627 (GMT/UTC)
+Command ':SC', sending '1Updating Planetary Data#                              #'
+Processing ':GR#'
+FUNCTION meade_lx200_cmd_GR_get_ra
+FUNCTION update_alt_az - local_alt 5.822129413903568 - local_aaz 2.0243499945347363
+FUNCTION alt_az_to_equatorial - passed values: alt 5.822129413903568 - az 2.0243499945347363
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [9.46207805] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - az wrap at 90d: 0.03533157261736036
+FUNCTION alt_az_to_equatorial - actual values: ra 0.9018937841346785 - dec 0.03533157261736036
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+Command ':GR', sending '03:26:42#'
+Processing ':RS#:GD#'
+Command ':RS', no response
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION update_alt_az - local_alt 5.254304692558707 - local_aaz 0.41393608180040975
+FUNCTION alt_az_to_equatorial - passed values: alt 5.254304692558707 - az 0.41393608180040975
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [9.46874351] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - az wrap at 90d: 0.007224547520221727
+FUNCTION alt_az_to_equatorial - actual values: ra 0.9018937841346785 - dec 0.007224547520221727
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+FUNCTION radians_to_sddmmss - passed values: 0.007224547520221727
+FUNCTION radians_to_sddmmss - actual values: angle = 0.007224547520221727, fraction = 0.1379786939334699, degrees = 0.0, arcminutes = 0.0
+
+FUNCTION radians_to_sddmmss - return values: +00*00:08#
+
+RA 03:26:42# (0.90189 radians), dec +00*00:08# (0.00722 radians)
+FUNCTION radians_to_sddmmss - passed values: 0.007224547520221727
+FUNCTION radians_to_sddmmss - actual values: angle = 0.007224547520221727, fraction = 0.1379786939334699, degrees = 0.0, arcminutes = 0.0
+
+FUNCTION radians_to_sddmmss - return values: +00*00:08#
+
+Command ':GD', sending '+00*00:08#'
+Processing ':Q#'
+Command ':Q', no response
