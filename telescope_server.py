@@ -377,7 +377,6 @@ def meade_lx200_cmd_GR_get_ra():
     Depending which precision is set for the telescope
     """
     #TODO - Since :GR# and :GD# commands normally in pairs, cache this?
-    global local_alt, local_az
     debug_info("FUNCTION meade_lx200_cmd_GR_get_ra")
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
@@ -394,7 +393,6 @@ def meade_lx200_cmd_GD_get_dec():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
-    global local_alt, local_az
     debug_info("FUNCTION meade_lx200_cmd_GD_get_dec")
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
