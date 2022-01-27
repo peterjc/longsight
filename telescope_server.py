@@ -159,25 +159,11 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
     ra = Angle(location.geodetic.lat, u.radian)
-    debug_info("deterime ra from latitude: %s" % ra.radian)
     dec = Angle(az * u.deg)
     dec.wrap_at('90d', inplace=True)
-    debug_info("wrap at 90d: %s" % dec.radian)
+    debug_info("FUNCTION alt_az_to_equatorial - deterime ra from latitude: %s" % ra.radian)
+    debug_info("FUNCTION alt_az_to_equatorial - az wrap at 90d: %s" % dec.radian)
     
-    ''' 
-    #Calculate these once only for speed
-    sin_lat = sin(lat.radian)
-    cos_lat = cos(lat.radian)
-    sin_alt = sin(alt)
-    cos_alt = cos(alt)
-    sin_az = sin(az)
-    cos_az = cos(az)
-    dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
-    hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
-    if sin_az > 0.0:
-        hours_in_rad = 2*pi - hours_in_rad
-    ra = gst - (tmpdec.radian * pi / 180) - hours_in_rad
-    '''
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra.radian, dec.radian))
     return ra.radian, dec.radian
 
@@ -200,17 +186,7 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (alt, az % (2*pi)))
     return alt, az % (2*pi)
 
-'''def alt_az_to_equatorial(alt, az, gst=None):
-    debug_info("FUNCTION alt_az_to_equatorial - passed values: alt %r - az %r" % (alt, az))
-    global local_site 
-    obs = obs_time()
-    newAltAzcoordiantes = SkyCoord(alt = local_site.alt, az = local_site.az + az*u.deg, obstime = obs, frame = 'altaz')
-    alt = Longitude([newAltAzcoordiantes.alt] * u.deg)
-    az = Angle([newAltAzcoordiantes.az] * u.deg)
-    az.wrap_at('90d', inplace=True)
-    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra, dec))
-    return alt.radian[0][0], az.degree[0][0]
-
+'''
 def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
     global local_site #and time offset used too
@@ -220,7 +196,8 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     obs = obs_time()
     cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
     debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (cAltAz.alt, cAltAz.az))
-    return cAltAz.alt, cAltAz.az'''
+    return cAltAz.alt, cAltAz.az
+'''
 
 # ====================
 # Meade LX200 Protocol
@@ -369,7 +346,7 @@ def radians_to_sddmmss(angle):
     degress: 30.0
     return: -30*28:02#
     """
-    debug_info("FUNCTION radians_to_sddmmss - passed values: %s")
+    debug_info("FUNCTION radians_to_sddmmss - passed values: %s" % angle)
     if angle < 0.0:
         sign = "-"
         angle = abs(angle)
