@@ -38,6 +38,10 @@ Readout Rate: 4 per second (default)
 Save Log File: Off (default)
 ```
 
+# Protocol
+
+[LX-200](https://www.meade.com/support/LX200CommandSet.pdf)
+
 # Tools 
 
 In order to try and understand Latitude and Longitude, and how to convert that to degrees and then to radians
