@@ -8,30 +8,31 @@ Lines *184* for telescope to *equatorial_to_alt_az*
 
 # Pending Items to Solve
 
+> UNCTION alt_az_to_equatorial - gst: [7h41m02.26394328s]
+> FUNCTION alt_az_to_equatorial - hours_in_rad: 3.4434746708437443
+> FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+> FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+> FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+
+Crash on formula
+
+```
+Traceback (most recent call last):
+  File "/home/pi/longsight/telescope_server.py", line 719, in <module>
+    resp = command_map[cmd]()
+  File "/home/pi/longsight/telescope_server.py", line 405, in meade_lx200_cmd_GR_get_ra
+    ra, dec = alt_az_to_equatorial(local_alt, local_az)
+  File "/home/pi/longsight/telescope_server.py", line 186, in alt_az_to_equatorial
+    ra = gst - lon.radian - hours_in_rad
+  File "/usr/local/lib/python3.9/dist-packages/astropy/coordinates/angles.py", line 699, in __array_ufunc__
+    results = super().__array_ufunc__(*args, **kwargs)
+  File "/usr/local/lib/python3.9/dist-packages/astropy/units/quantity.py", line 594, in __array_ufunc__
+    converters, unit = converters_and_unit(function, method, *inputs)
+  File "/usr/local/lib/python3.9/dist-packages/astropy/units/quantity_helper/converters.py", line 192, in converters_and_unit
+    raise UnitConversionError(
+astropy.units.core.UnitConversionError: Can only apply 'subtract' function to dimensionless quantities when other argument is not a quantity (unless the latter is all zero/infinity/nan)
+```
+
 - Connecting to Sky Safari Plus 7.0 works, after connecting if you choose "align" the following comes up and the program crashes *lines 184 - equatorial_to_alt_az*
 
-```
-FUNCTION meade_lx200_cmd_GD_get_dec
-FUNCTION radians_to_hhmmss
-FUNCTION radians_to_hms
-FUNCTION radians_to_sddmmss - passed values: 0.007224547520221727
-FUNCTION radians_to_sddmmss - actual values: angle = 0.007224547520221727, fraction = 0.1379786939334699, degrees = 0.0, arcminutes = 0.0
-
-FUNCTION radians_to_sddmmss - return values: +00*00:08#
-
-RA 03:26:42# (0.90189 radians), dec +00*00:08# (0.00722 radians)
-FUNCTION radians_to_sddmmss - passed values: 0.007224547520221727
-FUNCTION radians_to_sddmmss - actual values: angle = 0.007224547520221727, fraction = 0.1379786939334699, degrees = 0.0, arcminutes = 0.0
-
-FUNCTION radians_to_sddmmss - return values: +00*00:08#
-
-Command ':GD', sending '+00*00:08#'
-Processing ':Q#'
-Command ':Q', no response 
-```
-
-Resulting in a disconnect with Sky Safari Plus 7.0, possible value of DEC is incorrect from *alt_az_to_equatorial*
-
-
-
-*equatorial_to_alt_az* needs to be rewritten
+> *equatorial_to_alt_az* needs to be rewritten
