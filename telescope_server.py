@@ -3,6 +3,9 @@
 
 Intended to mimick a SkyFi (serial to TCP/IP bridge) and compatible
 Meade telescope normally controlled via a serial cable. 
+
+Peter Cook - https://github.com/peterjc
+refactoring attempts - Craig Cmehil - https://github.com/ccmehil
 """
 
 import socket
@@ -26,6 +29,7 @@ import numpy as np
 
 #Local import
 from mpu9250 import GYMOD
+# from gy80 import GYMOD #GY-80 hardware module
 
 print("Checking Configuration")
 config_file = "telescope_server.ini"
