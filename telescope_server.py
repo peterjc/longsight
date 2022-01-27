@@ -179,7 +179,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
         hours_in_rad = 2*pi - hours_in_rad
 
     # Now figure out RA based on Longitude in Radians
-    ra = gst - site_longitude - hours_in_rad
+    #ra = gst - site_longitude - hours_in_rad
+    ra = lat.radian
     debug_info("FUNCTION alt_az_to_equatorial - RA from longitude: %s" % dec.radian)
 
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec.radian))
