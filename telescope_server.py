@@ -89,7 +89,7 @@ def save_config():
 
 def debug_info(str):
     if debug:
-        if debug_function not in str:
+        if debug_function in str:
             sys.stdout.write("%s\n" % str)
 
 def _check_close(a, b, error=0.0001):
