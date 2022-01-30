@@ -78,9 +78,11 @@ offset_az = config.getfloat("offsets", "azimuth")
 target_ra = 0.0
 target_dec = 0.0
 
-#Turn on for lots of logging...
+#Turn on for lots of logging, debug_function add the function name if you want to 
+# focus on a single functions output. Debug statements in each function start
+# with 'FUNCTION xxxxx' 
 debug = True
-debug_function = ' '
+debug_function = 'alt_az_to_equatorial'
 
 def save_config():
     global condig, config_file
@@ -165,7 +167,6 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
 
-    #lat = Angle(location.geodetic.lat, u.radian)
     lat = Angle(site_latitude, u.radian)
     debug_info("FUNCTION alt_az_to_equatorial - deterime ra from latitude: %s" % lat.radian)
     #Calculate these once only for speed
@@ -702,13 +703,13 @@ while True:
             debug_info("Processing %r" % data)
             while data:
                 while data[0:1] == "#":
-                    #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
+                    sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
                     data = data[1:]
                 if not data:
                     break
                 if "#" in data:
                     raw_cmd = data[:data.index("#")]
-                    #sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
+                    sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
