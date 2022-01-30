@@ -115,7 +115,7 @@ def obs_time():
     times = [now]
     t = Time(times, scale='utc')
     obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
-    return obstime
+    return dt.utcnow()
 
 def update_alt_az():
     global imu, offset_alt, offset_az, local_alt, local_az
