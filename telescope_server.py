@@ -28,7 +28,7 @@ from astropy import units as u
 import numpy as np
 
 #Local import
-from mpu9250 import GYMOD
+from mpu9250 import GYMOD #MPU9250 hardware module
 # from gy80 import GYMOD #GY-80 hardware module
 
 print("Checking Configuration")
@@ -218,19 +218,6 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (alt, az % (2*pi)))
     return alt, az % (2*pi)
 
-'''
-def equatorial_to_alt_az(ra, dec, gst=None):
-    debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
-    global local_site #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
-    c = SkyCoord(ra = ra*u.degree, dec = dec*u.degree, frame='icrs')
-    obs = obs_time()
-    cAltAz = c.transform_to(AltAz(obstime = obs, location = local_site))
-    debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (cAltAz.alt, cAltAz.az))
-    return cAltAz.alt, cAltAz.az
-'''
-
 # ====================
 # Meade LX200 Protocol
 # ==================== 
@@ -389,7 +376,7 @@ def radians_to_sddmmss(angle):
     debug_info("FUNCTION radians_to_sddmmss - actual values: angle = %s, fraction = %s, degrees = %s, arcminutes = %s\n" % (angle, fraction, degrees, arcminutes))
     debug_info("FUNCTION radians_to_sddmmss - return values: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
-'''
+
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
@@ -400,7 +387,7 @@ for r in [0, 0.01, 0.1, pi, 2*pi]:
     assert 0 <= r <= 2*pi, r
     _check_close(parse_hhmm(radians_to_hhmmt(r).rstrip("#")), r)
     _check_close(parse_hhmm(radians_to_hhmmss(r).rstrip("#")), r)
-'''
+
 
 def meade_lx200_cmd_GR_get_ra():
     """For the :GR# command, Get Telescope RA
