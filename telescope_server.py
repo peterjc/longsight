@@ -193,10 +193,9 @@ def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad")
     ra = gst - lon.radian - hours_in_rad
     debug_info("FUNCTION alt_az_to_equatorial - RA from longitude: %s" % dec)
- #   debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
-#    return ra % (pi*2), dec
-    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra, dec))
-    return ra, dec
+    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
+    return ra % (pi*2), dec
+
 
 def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
