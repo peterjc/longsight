@@ -15,7 +15,14 @@ The perspective/screen of Sky Safari jumps all over the place as if the values a
 > FUNCTION alt_az_to_equatorial - actual values: ra 0.9406634036803876 - dec -0.18057505980703245
 > FUNCTION alt_az_to_equatorial - actual values: ra 1.3600532749398022 - dec -0.19879488006946985
 
-Without moving the sensor it seems the values are somehow quite varying
+Without moving the sensor it seems the values are somehow quite varying. Could the 
+
+```
+return ra % (pi*2), dec
+```
+
+Not be needed as astropy is calculating the radians already?
+
 
 - Connecting to Sky Safari Plus 7.0 works, after connecting if you choose "align" the program crashes *lines 191 - equatorial_to_alt_az*
 
