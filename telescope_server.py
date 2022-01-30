@@ -80,6 +80,7 @@ target_dec = 0.0
 
 #Turn on for lots of logging...
 debug = True
+debug_function = 'alt_az_to_equatorial'
 
 def save_config():
     global condig, config_file
@@ -88,7 +89,8 @@ def save_config():
 
 def debug_info(str):
     if debug:
-        sys.stdout.write("%s\n" % str)
+        if debug_function not in str:
+            sys.stdout.write("%s\n" % str)
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -124,7 +126,7 @@ def update_alt_az():
     #Altitude is measured upwards
     local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
-    debug_info("FUNCTION update_alt_az - local_alt %r - local_aaz %r" % (local_alt, local_az) )
+    debug_info("FUNCTION update_alt_az - local_alt %r - local_az %r" % (local_alt, local_az) )
 
 def site_time_gmt_as_epoch():
     global local_time_offset
