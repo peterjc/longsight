@@ -677,7 +677,7 @@ sock.bind(server_address)
 sock.listen(5)
 
 while True:
-    sys.stdout.write("waiting for a connection\n")
+    sys.stdout.write("Waiting for a connection\n")
     connection, client_address = sock.accept()
     data = ""
     try:
@@ -690,6 +690,7 @@ while True:
                 break
             #For stacked commands like ":RS#:GD#",
             debug_info("Processing %r" % data)
+            time.sleep(3)
             while data:
                 while data[0:1] == "#":
                     sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
