@@ -80,9 +80,9 @@ target_dec = 0.0
 
 #Turn on for lots of logging, debug_function add the function name if you want to 
 # focus on a single functions output. Debug statements in each function start
-# with 'FUNCTION xxxxx' 
+# with 'FUNCTION xxxxx' or simply with ' ' to display all 
 debug = True
-debug_function = 'alt_az_to_equatorial'
+debug_function = ' '
 
 def save_config():
     global condig, config_file
@@ -690,7 +690,6 @@ while True:
                 break
             #For stacked commands like ":RS#:GD#",
             debug_info("Processing %r" % data)
-            time.sleep(3)
             while data:
                 while data[0:1] == "#":
                     sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
