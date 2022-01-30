@@ -21,7 +21,7 @@ Without moving the sensor it seems the values are somehow quite varying. Could t
 return ra % (pi*2), dec
 ```
 
-Not be needed as astropy is calculating the radians already?
+Not be needed as astropy is calculating the radians already? Or could all the math not really be necessary as astropy is handling it differently?
 
 
 - Connecting to Sky Safari Plus 7.0 works, after connecting if you choose "align" the program crashes *lines 191 - equatorial_to_alt_az*
