@@ -80,7 +80,7 @@ target_dec = 0.0
 
 #Turn on for lots of logging...
 debug = True
-debug_function = 'alt_az_to_equatorial'
+debug_function = ' '
 
 def save_config():
     global condig, config_file
@@ -165,7 +165,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
 
-    lat = Angle(location.geodetic.lat, u.radian)
+    #lat = Angle(location.geodetic.lat, u.radian)
+    lat = Angle(site_latitude, u.radian)
     debug_info("FUNCTION alt_az_to_equatorial - deterime ra from latitude: %s" % lat.radian)
     #Calculate these once only for speed
     sin_lat = sin(lat.radian)
@@ -200,14 +201,14 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     if gst is None:
         gst = greenwich_sidereal_time_in_radians()
 
-    #lat = Angle(location.geodetic.lat, u.radian)
-    lat = site_latitude * pi / 180
+    lat = Angle(location.geodetic.lat, u.radian)
+    lon = Angle(site_longitude, u.radian)
     #Calculate these once only for speed
-    sin_lat = sin(lat)
-    cos_lat = cos(lat)
+    sin_lat = sin(lat.radian)
+    cos_lat = cos(lat.radian)
     sin_dec = sin(dec)
     cos_dec = cos(dec)
-    h = gst - (site_longitude * pi / 180) - ra
+    h = gst - (lon.radian * pi / 180) - ra
     sin_h = sin(h)
     cos_h = cos(h)
     alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
