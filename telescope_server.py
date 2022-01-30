@@ -688,11 +688,11 @@ sock.bind(server_address)
 sock.listen(5)
 
 while True:
-    #sys.stdout.write("waiting for a connection\n")
+    sys.stdout.write("waiting for a connection\n")
     connection, client_address = sock.accept()
     data = ""
     try:
-        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
+        sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
             data_received = connection.recv(16)
             data = data_received.decode()
