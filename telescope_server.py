@@ -263,7 +263,7 @@ def meade_lx200_cmd_CM_sync():
     config.set("offsets", "azimuth", offset_az)
     save_config()
     update_alt_az()
-    sys.stderr.write("Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     return "M31 EX GAL MAG 3.5 SZ178.0'"
 
