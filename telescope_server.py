@@ -337,13 +337,13 @@ def radians_to_sddmmss(angle):
     debug_info("FUNCTION radians_to_sddmmss - actual values: angle = %s, fraction = %s, degrees = %s, arcminutes = %s\n" % (angle, fraction, degrees, arcminutes))
     debug_info("FUNCTION radians_to_sddmmss - return values: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
-
+'''
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
     _check_close(parse_sddmm(radians_to_sddmm(r).rstrip("#")), r, 0.0002)
     _check_close(parse_sddmm(radians_to_sddmmss(r).rstrip("#")), r)
-
+'''
 for r in [0, 0.01, 0.1, pi, 2*pi]:
     #Testing dec from 0 to 2*pi
     assert 0 <= r <= 2*pi, r
