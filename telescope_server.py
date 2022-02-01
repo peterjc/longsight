@@ -164,9 +164,14 @@ def greenwich_sidereal_time_in_radians():
 def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("FUNCTION alt_az_to_equatorial - passed values: alt %r - az %r" % (alt, az))
     global site_longitude, site_latitude, location #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
+    #if gst is None:
+    #    gst = greenwich_sidereal_time_in_radians()
 
+    newAltAz = SkyCoord(alt = alt * u.deg, az = az * u.deg, obstime = dt.utcnow(), frame = 'altaz', location = location)
+    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (newAltAz.transform_to('icrs').ra.radian, newAltAz.transform_to('icrs').dec.radian))
+    return newAltAz.transform_to('icrs').ra.radian, newAltAz.transform_to('icrs').dec.radian
+
+'''
     lat = Angle(site_latitude, u.radian)
     debug_info("FUNCTION alt_az_to_equatorial - deterime ra from latitude: %s" % lat.radian)
     #Calculate these once only for speed
@@ -195,6 +200,8 @@ def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("FUNCTION alt_az_to_equatorial - RA from longitude: %s" % dec)
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
     return ra % (pi*2), dec
+'''
+
 
 
 def equatorial_to_alt_az(ra, dec, gst=None):
