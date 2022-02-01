@@ -1,0 +1,75 @@
+FUNCTION meade_lx200_cmd_GD_get_dec
+RA 17:27:46# (4.57175 radians), dec -00*00:34# (-0.03000 radians)
+':GR#' --> ':GR' as command
+FUNCTION alt_az_to_equatorial - passed values: alt 5.488861906010419 - az 0.007464491527548339
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9017534468637369
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.12529272564088567
+FUNCTION alt_az_to_equatorial - gst: 1.625194455281565
+FUNCTION alt_az_to_equatorial - hours_in_rad: 3.1468648310141463
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.12529272564088567
+FUNCTION alt_az_to_equatorial - actual values: ra 4.906959035779865 - dec -0.12529272564088567
+':RS#' --> ':RS' as command
+':GD#' --> ':GD' as command
+FUNCTION alt_az_to_equatorial - passed values: alt 5.604684794734311 - az 5.201755924259443
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9017534468637369
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.2685587555830068
+FUNCTION alt_az_to_equatorial - gst: 1.6254529274917295
+FUNCTION alt_az_to_equatorial - hours_in_rad: 2.3482704110130546
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.2685587555830068
+FUNCTION alt_az_to_equatorial - actual values: ra 5.705811927991121 - dec -0.2685587555830068
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+RA 21:47:41# (5.70581 radians), dec -00*05:08# (-0.26856 radians)
+':GR#' --> ':GR' as command
+FUNCTION alt_az_to_equatorial - passed values: alt 5.792763970705213 - az 4.861410321883307
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9017534468637369
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.2923727888350321
+FUNCTION alt_az_to_equatorial - gst: 1.625465855393648
+FUNCTION alt_az_to_equatorial - hours_in_rad: 1.9958445055521141
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.2923727888350321
+FUNCTION alt_az_to_equatorial - actual values: ra 6.05825076135398 - dec -0.2923727888350321
+':GD#' --> ':GD' as command
+FUNCTION alt_az_to_equatorial - passed values: alt 6.053566438444271 - az 4.59030024025292
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9017534468637369
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.25484069778244123
+FUNCTION alt_az_to_equatorial - gst: 1.6254811714637758
+FUNCTION alt_az_to_equatorial - hours_in_rad: 1.6205700958079672
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.25484069778244123
+FUNCTION alt_az_to_equatorial - actual values: ra 0.15035517998866865 - dec -0.25484069778244123
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+RA 00:34:28# (0.15036 radians), dec -00*04:52# (-0.25484 radians)
+':GR#' --> ':GR' as command
+FUNCTION alt_az_to_equatorial - passed values: alt 6.249970046720756 - az 4.387708795650179
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9017534468637369
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.22571091432518617
+FUNCTION alt_az_to_equatorial - gst: 1.6254920799598602
+FUNCTION alt_az_to_equatorial - hours_in_rad: 1.3330939939989874
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.22571091432518617
+FUNCTION alt_az_to_equatorial - actual values: ra 0.4378421902937326 - dec -0.22571091432518617
+':GD#' --> ':GD' as command
+FUNCTION alt_az_to_equatorial - passed values: alt 0.13026583095959435 - az 4.226486223691618
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9017534468637369
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.18638351681985768
+FUNCTION alt_az_to_equatorial - gst: 1.6255029204933702
+FUNCTION alt_az_to_equatorial - hours_in_rad: 1.102224563232978
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.18638351681985768
+FUNCTION alt_az_to_equatorial - actual values: ra 0.6687224615932523 - dec -0.18638351681985768

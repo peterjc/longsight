@@ -1,0 +1,476 @@
+Processing ':St+51*40#'
+Command ':St', argument '+51*40'
+meade_lx200_cmd_St_set_latitude: +51*40
+Command ':St', sending '1'
+Processing ':Sg351*40#'
+Command ':Sg', argument '351*40'
+meade_lx200_cmd_Sg_set_longitude: 351*40
+Local site now latitude +51d40, longitude 351d40
+Command ':Sg', sending '1'
+Processing ':SG-01.0#'
+Command ':SG', argument '-01.0'
+Local site timezone now -1.0
+Command ':SG', sending '1'
+Processing ':SG-01.0#'
+Command ':SG', argument '-01.0'
+Local site timezone now -1.0
+Command ':SG', sending '1'
+Processing ':SL23:38:18#'
+Command ':SL', argument '23:38:18'
+Requested site time 23:38:18 (TZ -1.0), new offset -1s, total offset -1s
+Effective site date/time is 2022-01-26 00:38:18.275661 (local time), 2022-01-25 23:38:18.275887 (GMT/UTC)
+Command ':SL', sending '1'
+Processing ':SC01/25/22#'
+Command ':SC', argument '01/25/22'
+Requested site date 01/25/22 (MM/DD/YY) gives offset of 0 days
+Effective site date/time is 2022-01-26 00:38:18.428540 (local time), 2022-01-25 23:38:18.428761 (GMT/UTC)
+Command ':SC', sending '1Updating Planetary Data#                              #'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 0.6768823333675326
+local_alt 5.459970321996165
+
+FUNCTION alt_az_to_equatorial
+alt 5.459970321996165
+az 0.6768823333675326
+Actual Values
+ra 0.2664599355565045
+dec -95.09979412809093
+Command ':GR', sending '01:01:04#'
+Processing ':RS#'
+Command ':RS', no response
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 3.712762577352128
+local_alt 1.35003929037928
+
+FUNCTION alt_az_to_equatorial
+alt 1.35003929037928
+az 3.712762577352128
+Actual Values
+ra 0.2664599355565045
+dec -92.06391388410634
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 92.06391388410634
+fraction: 0.2912370050518547
+degress: 29.0
+arcminutes: 18.0
+return: -29*18:17#
+RA 01:01:04# (0.26646 radians), dec -29*18:17# (-92.06391 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 92.06391388410634
+fraction: 0.2912370050518547
+degress: 29.0
+arcminutes: 18.0
+return: -29*18:17#
+Command ':GD', sending '-29*18:17#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 0.031572477830419554
+local_alt 0.7402277536840056
+
+FUNCTION alt_az_to_equatorial
+alt 0.7402277536840056
+az 0.031572477830419554
+Actual Values
+ra 0.2664599355565045
+dec -95.74510398362804
+Command ':GR', sending '01:01:04#'
+Processing ':RS#'
+Command ':RS', no response
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 3.171688225340013
+local_alt 5.061476734195773
+
+FUNCTION alt_az_to_equatorial
+alt 5.061476734195773
+az 3.171688225340013
+Actual Values
+ra 0.2664599355565045
+dec -92.60498823611846
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 92.60498823611846
+fraction: 0.6249959294084277
+degress: 29.0
+arcminutes: 28.0
+return: -29*28:37#
+RA 01:01:04# (0.26646 radians), dec -29*28:37# (-92.60499 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 92.60498823611846
+fraction: 0.6249959294084277
+degress: 29.0
+arcminutes: 28.0
+return: -29*28:37#
+Command ':GD', sending '-29*28:37#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 3.0103557105795105
+local_alt 0.04407296271579985
+
+FUNCTION alt_az_to_equatorial
+alt 0.04407296271579985
+az 3.0103557105795105
+Actual Values
+ra 0.2664599355565045
+dec -92.76632075087895
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 2.242409388097259
+local_alt 1.3982340279514778
+
+FUNCTION alt_az_to_equatorial
+alt 1.3982340279514778
+az 2.242409388097259
+Actual Values
+ra 0.2664599355565045
+dec -93.5342670733612
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 93.5342670733612
+fraction: 0.3729143843531233
+degress: 29.0
+arcminutes: 46.0
+return: -29*46:22#
+RA 01:01:04# (0.26646 radians), dec -29*46:22# (-93.53427 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 93.5342670733612
+fraction: 0.3729143843531233
+degress: 29.0
+arcminutes: 46.0
+return: -29*46:22#
+Command ':GD', sending '-29*46:22#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 0.1832795760342468
+local_alt 0.5114757564414291
+
+FUNCTION alt_az_to_equatorial
+alt 0.5114757564414291
+az 0.1832795760342468
+Actual Values
+ra 0.2664599355565045
+dec -95.59339688542423
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 6.075427958560113
+local_alt 5.175074233795774
+
+FUNCTION alt_az_to_equatorial
+alt 5.175074233795774
+az 6.075427958560113
+Actual Values
+ra 0.2664599355565045
+dec -89.70124850289835
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 89.70124850289835
+fraction: 0.16765209008991633
+degress: 28.0
+arcminutes: 33.0
+return: -28*33:10#
+RA 01:01:04# (0.26646 radians), dec -28*33:10# (-89.70125 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 89.70124850289835
+fraction: 0.16765209008991633
+degress: 28.0
+arcminutes: 33.0
+return: -28*33:10#
+Command ':GD', sending '-28*33:10#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 3.397604161664236
+local_alt 5.404771098403139
+
+FUNCTION alt_az_to_equatorial
+alt 5.404771098403139
+az 3.397604161664236
+Actual Values
+ra 0.2664599355565045
+dec -92.37907229979425
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 2.860820148878184
+local_alt 0.4836037276029206
+
+FUNCTION alt_az_to_equatorial
+alt 0.4836037276029206
+az 2.860820148878184
+Actual Values
+ra 0.2664599355565045
+dec -92.91585631258027
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 92.91585631258027
+fraction: 0.562138851612545
+degress: 29.0
+arcminutes: 34.0
+return: -29*34:34#
+RA 01:01:04# (0.26646 radians), dec -29*34:34# (-92.91586 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 92.91585631258027
+fraction: 0.562138851612545
+degress: 29.0
+arcminutes: 34.0
+return: -29*34:34#
+Command ':GD', sending '-29*34:34#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 0.9958191715539206
+local_alt 1.1739160089283902
+
+FUNCTION alt_az_to_equatorial
+alt 1.1739160089283902
+az 0.9958191715539206
+Actual Values
+ra 0.2664599355565045
+dec -94.78085728990453
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 6.1920136362880935
+local_alt 6.216508468219399
+
+FUNCTION alt_az_to_equatorial
+alt 6.216508468219399
+az 6.1920136362880935
+Actual Values
+ra 0.2664599355565045
+dec -89.58466282517037
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 89.58466282517037
+fraction: 0.9410296615946834
+degress: 28.0
+arcminutes: 30.0
+return: -28*30:56#
+RA 01:01:04# (0.26646 radians), dec -28*30:56# (-89.58466 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 89.58466282517037
+fraction: 0.9410296615946834
+degress: 28.0
+arcminutes: 30.0
+return: -28*30:56#
+Command ':GD', sending '-28*30:56#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 5.347919069989869
+local_alt 5.220369615777074
+
+FUNCTION alt_az_to_equatorial
+alt 5.220369615777074
+az 5.347919069989869
+Actual Values
+ra 0.2664599355565045
+dec -90.4287573914686
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 3.1949392296502213
+local_alt 5.96371209065219
+
+FUNCTION alt_az_to_equatorial
+alt 5.96371209065219
+az 3.1949392296502213
+Actual Values
+ra 0.2664599355565045
+dec -92.58173723180823
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 92.58173723180823
+fraction: 0.1809344572696574
+degress: 29.0
+arcminutes: 28.0
+return: -29*28:11#
+RA 01:01:04# (0.26646 radians), dec -29*28:11# (-92.58174 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 92.58173723180823
+fraction: 0.1809344572696574
+degress: 29.0
+arcminutes: 28.0
+return: -29*28:11#
+Command ':GD', sending '-29*28:11#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 3.056606444413971
+local_alt 0.7533805937250719
+
+FUNCTION alt_az_to_equatorial
+alt 0.7533805937250719
+az 3.056606444413971
+Actual Values
+ra 0.2664599355565045
+dec -92.72007001704452
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 0.2609537143182802
+local_alt 0.8085618195193353
+
+FUNCTION alt_az_to_equatorial
+alt 0.8085618195193353
+az 0.2609537143182802
+Actual Values
+ra 0.2664599355565045
+dec -95.51572274714016
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 95.51572274714016
+fraction: 0.21593018428140454
+degress: 30.0
+arcminutes: 24.0
+return: -30*24:13#
+RA 01:01:04# (0.26646 radians), dec -30*24:13# (-95.51572 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 95.51572274714016
+fraction: 0.21593018428140454
+degress: 30.0
+arcminutes: 24.0
+return: -30*24:13#
+Command ':GD', sending '-30*24:13#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 0.12469143663294126
+local_alt 5.67161132995596
+
+FUNCTION alt_az_to_equatorial
+alt 5.67161132995596
+az 0.12469143663294126
+Actual Values
+ra 0.2664599355565045
+dec -95.65198502482554
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 2.912769543393607
+local_alt 5.09300130151974
+
+FUNCTION alt_az_to_equatorial
+alt 5.09300130151974
+az 2.912769543393607
+Actual Values
+ra 0.2664599355565045
+dec -92.86390691806486
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 92.86390691806486
+fraction: 0.5699785002812945
+degress: 29.0
+arcminutes: 33.0
+return: -29*33:34#
+RA 01:01:04# (0.26646 radians), dec -29*33:34# (-92.86391 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 92.86390691806486
+fraction: 0.5699785002812945
+degress: 29.0
+arcminutes: 33.0
+return: -29*33:34#
+Command ':GD', sending '-29*33:34#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 3.140118836813804
+local_alt 6.154082558381589
+
+FUNCTION alt_az_to_equatorial
+alt 6.154082558381589
+az 3.140118836813804
+Actual Values
+ra 0.2664599355565045
+dec -92.63655762464464
+Command ':GR', sending '01:01:04#'
+Processing ':GD#'
+
+FUNCTION update_alt_az
+local_az 3.302477870329738
+local_alt 1.0960525148343025
+
+FUNCTION alt_az_to_equatorial
+alt 1.0960525148343025
+az 3.302477870329738
+Actual Values
+ra 0.2664599355565045
+dec -92.47419859112875
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+
+FUNCTION radians_to_sddmmss
+angle: 92.47419859112875
+fraction: 0.12709770876712412
+degress: 29.0
+arcminutes: 26.0
+return: -29*26:08#
+RA 01:01:04# (0.26646 radians), dec -29*26:08# (-92.47420 radians)
+
+FUNCTION radians_to_sddmmss
+angle: 92.47419859112875
+fraction: 0.12709770876712412
+degress: 29.0
+arcminutes: 26.0
+return: -29*26:08#
+Command ':GD', sending '-29*26:08#'
+Processing ':GR#'
+
+FUNCTION update_alt_az
+local_az 6.281114571103999
+local_alt 0.7869913587999734
+
+FUNCTION alt_az_to_equatorial
+alt 0.7869913587999734
+az 6.281114571103999
+Actual Values
+ra 0.2664599355565045
+dec -89.49556189035445
+Command ':GR', sending '01:01:04#'
+Processing ':Q#'
+Command ':Q', no response

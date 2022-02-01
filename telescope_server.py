@@ -2,126 +2,71 @@
 """TCP/IP server which listens for Meade LX200 style serial commands.
 
 Intended to mimick a SkyFi (serial to TCP/IP bridge) and compatible
-Meade telescope normally controlled via a serial cable. In theory
-this could be modified to listen to an actual serial port too...
+Meade telescope normally controlled via a serial cable. 
 
-The intended goal is that celestial/planetarium software like the
-SkySafari applications can talk to this server as if it was an off
-the shelf Meade LX200 compatible "Go To" telescope, when in fact
-it is a DIY intrumented telescope or simulation.
-
-See http://astrobeano.blogspot.co.uk/2014/01/instrumented-telescope-with-raspberry.html
-
-Testing with Sky Safari Plus v4.0, with the telescope usually setup as:
-
-Scope Type: Meade LX-200 GPS
-Mount Type: Equatorial Push-To (or any push to setting)
-Auto-Detect SkyFi: Off
-IP Address: That of the computer running this script (default 10.0.0.1)
-Port Number: 4030 (default)
-Set Time & Location: On (default is off)
-Readout Rate: 4 per second (default)
-Save Log File: Off (default)
-
-With this, the "Connect/Disconnect" button works fine, once connected
-the scope queries the position using the :GR# and :GD# commands.
-
-The "Goto" button is disabled (when configured as a Push-To telecope).
-
-The "Align" button gives an are you sure prompt with the currently
-selected objects name (e.g. a star), and then sends its position
-using the Sr and Sd commands, followed by the :CM# command.
-
-The "Lock/Unlock" button controls if SkySafari automatically pans
-the display to keep the reported telescope direction centered.
-
-If configured as a Goto telescope, additional left/right and up/down
-buttons appear on screen (which send East/West, North/South movement
-commands. Also, a slew rate slider control appears. Depending on which
-model telescope was selected, this may give four rates via the
-RC/RG/RM/RS commands, or Sw commands (in the range 2 to 8).
-
-If SkySafari's "Set Time & Location" feature is selected, it will
-send commands St and Sg (for the location) then SG, SL, SC to set
-the time and date. If using "Meade LX-200 Classic" this imposes
-a 15s delay, using a newer model like the "Meade LX-200 GPS" there
-is no noticeable delay on connection.
-
-Additional limited testing also done with the Celestron NexStar
-protocol, although SkySafari 4 does not seem to use its built in
-commands for setting the date/time or location, nor the synching
-commands for alignment.
+Peter Cook - https://github.com/peterjc
+refactoring attempts - Craig Cmehil - https://github.com/ccmehil
 """
-
-#More references on Alt/Az horizontal coordinates to equatorial:
-#http://pythonhosted.org/Astropysics/coremods/obstools.html#astropysics.obstools.Site
-#https://github.com/eteq/astropysics/issues/21
-#https://github.com/astropy/astropy-api/pull/6
-#http://infohost.nmt.edu/tcc/help/lang/python/examples/sidereal/ims/
 
 import socket
 import os
 import sys
-import commands
+import subprocess
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
 import time
 import datetime
+from datetime import datetime as dt
 from math import pi, sin, cos, asin, acos, atan2, modf
 
-#TODO - Try astropy if I can get it to compile on Mac OS X...
-from astropysics import coords
-from astropysics import obstools
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Longitude, Angle
+from astropy import coordinates as coord
+from astropy.time import Time
+from astropy import units as u
+import numpy as np
 
 #Local import
-from gy80 import GY80
+from mpu9250 import GYMOD #MPU9250 hardware module
+# from gy80 import GYMOD #GY-80 hardware module
 
+print("Checking Configuration")
 config_file = "telescope_server.ini"
 if not os.path.isfile(config_file):
     print("Using default settings")
     h = open("telescope_server.ini", "w")
-    h.write("[server]\nname=10.0.0.1\nport=4030\n")
-    #Default to Greenwich as the site
-    h.write("[site]\nlatitude=+51d28m38s\nlongitude=0\n")
+    h.write("[server]\nname=127.0.0.1\nport=4030\n")
+    #Default to Greenwich as the site, 1 as tz
+    h.write("[site]\naddress=Greenwich\n")
+    h.write("[site]\ntz=1\n")
+    h.write("[site]\nlatitude=51.6712\n")
+    h.write("[site]\nlongitude=8.3406\n")
     #Default to no correction of the angles
     h.write("[offsets]\nazimuth=0\naltitude=0\n")
     h.close()
 
 print("Connecting to sensors...")
-imu = GY80()
-print("Connected to GY-80 sensor")
+imu = GYMOD()
+print("Connected to MPU9250 sensor")
 
 print("Opening network port...")
 config = configparser.ConfigParser()
 config.read("telescope_server.ini")
 server_name = config.get("server", "name") #e.g. 10.0.0.1
 server_port = config.getint("server", "port") #e.g. 4030
-#server_name = socket.gethostbyname(socket.gethostname())
-#if server_name.startswith("127.0."): #e.g. 127.0.0.1
-#    #This works on Linux but not on Mac OS X or Windows:
-#    server_name = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
-##server_name = "10.0.0.1" #Override for wifi access
-#server_port = 4030 #Default port used by SkySafari
+site_address = config.get("site", "address") #e.g. Greenwich
+site_tz = config.get("site", "tz") #e.g. 1
+site_latitude = config.get("site", "latitude") #e.g. 51.4176
+site_longitude = config.get("site", "longitude") #e.g. 8.1923
 
 #If default to low precision, SkySafari turns it on anyway:
 high_precision = True
 
-#Default to Greenwich, GMT - Latitude 51deg 28' 38'' N, Longitude zero
-local_site = obstools.Site(coords.AngularCoordinate(config.get("site", "latitude")),
-                           coords.AngularCoordinate(config.get("site", "longitude")),
-                           tz=0)
 #Rather than messing with the system clock, will store any difference
 #between the local computer's date/time and any date/time set by the
 #client (which should match any location set by the client).
 local_time_offset = 0
-
-#This will probably best be inferred by calibration...
-#For Greenwich, magnetic north is estimated to be 2 deg 40 min west
-#of grid north at Greenwich in July 2013.
-#http://www.geomag.bgs.ac.uk/data_service/models_compass/gma_calc.html
-#local_site_magnetic_offset = -2.67 * pi / 180.0
 
 #These will come from sensor information... storing them in radians
 local_alt = 85 * pi / 180.0
@@ -133,13 +78,21 @@ offset_az = config.getfloat("offsets", "azimuth")
 target_ra = 0.0
 target_dec = 0.0
 
-#Turn on for lots of logging...
-debug = False
+#Turn on for lots of logging, debug_function add the function name if you want to 
+# focus on a single functions output. Debug statements in each function start
+# with 'FUNCTION xxxxx' or simply with ' ' to display all 
+debug = True
+debug_function = ' '
 
 def save_config():
     global condig, config_file
     with open(config_file, "w") as handle:
         config.write(handle)
+
+def debug_info(str):
+    if debug:
+        if debug_function in str:
+            sys.stdout.write("%s\n" % str)
 
 def _check_close(a, b, error=0.0001):
     if isinstance(a, (tuple, list)):
@@ -156,6 +109,14 @@ def _check_close(a, b, error=0.0001):
         raise ValueError("%s vs %s, difference %s > %s"
                          % (a, b, diff, error))
 
+def obs_time():
+    debug_info("FUNCTION obs_time")
+    now = dt.now()
+    times = [now]
+    t = Time(times, scale='utc')
+    obstime = Time(t) + np.linspace(0, 6, 10000) * u.hour
+    return dt.utcnow()
+
 def update_alt_az():
     global imu, offset_alt, offset_az, local_alt, local_az
     yaw, pitch, roll = imu.current_orientation_euler_angles_hybrid()
@@ -167,21 +128,26 @@ def update_alt_az():
     #Altitude is measured upwards
     local_alt = (offset_alt + pitch) % (2*pi)
     #We don't care about the roll for the Meade LX200 protocol.
+    debug_info("FUNCTION update_alt_az - local_alt %r - local_az %r" % (local_alt, local_az) )
 
 def site_time_gmt_as_epoch():
     global local_time_offset
+    debug_info("FUNCTION site_time_gmt_as_epoch")
     return time.time() + local_time_offset
 
 def site_time_gmt_as_datetime():
+    debug_info("FUNCTION site_time_gmt_as_datetime")
     return datetime.datetime.fromtimestamp(site_time_gmt_as_epoch())
 
 def site_time_local_as_datetime():
-    global local_site
-    return site_time_gmt_as_datetime() - datetime.timedelta(hours=local_site.tz)
+    global site_tz
+    debug_info("FUNCTION site_time_local_as_datetime - site_tz %r" % site_tz)
+    return site_time_gmt_as_datetime() - datetime.timedelta(hours=site_tz)
 
 def debug_time():
-    global local_site
-    if local_site.tz:
+    global site_tz
+    debug_info("FUNCTION debug_time - site_tz %r" % site_tz)
+    if site_tz:
         sys.stderr.write("Effective site date/time is %s (local time), %s (GMT/UTC)\n"
                          % (site_time_local_as_datetime(), site_time_gmt_as_datetime()))
     else:
@@ -189,60 +155,28 @@ def debug_time():
                          % site_time_gmt_as_datetime())
 
 def greenwich_sidereal_time_in_radians():
-    """Calculate using GMT (according to client's time settings)."""
-    #Function astropysics.obstools.epoch_to_jd wants a decimal year as input
-    #Function astropysics.obstools.calendar_to_jd can take a datetime object
-    gmt_jd = obstools.calendar_to_jd(site_time_gmt_as_datetime())
-    #Convert from hours to radians... 24hr = 2*pi
-    return coords.greenwich_sidereal_time(gmt_jd) * pi / 12
+    now = dt.now()
+    times = [now]
+    t = Time(times, scale='utc')
+    debug_info("FUNCTION greenwich_sidereal_time_in_radians - value %r" % t.sidereal_time('apparent', 'greenwich'))
+    return t.sidereal_time('apparent', 'greenwich').radian[0]
 
 def alt_az_to_equatorial(alt, az, gst=None):
-    global local_site #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
-    lat = local_site.latitude.r
-    #Calculate these once only for speed
-    sin_lat = sin(lat)
-    cos_lat = cos(lat)
-    sin_alt = sin(alt)
-    cos_alt = cos(alt)
-    sin_az = sin(az)
-    cos_az = cos(az)
-    dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
-    hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
-    if sin_az > 0.0:
-        hours_in_rad = 2*pi - hours_in_rad
-    ra = gst - local_site.longitude.r - hours_in_rad
-    return ra % (pi*2), dec
+    debug_info("FUNCTION alt_az_to_equatorial - passed values: alt %r - az %r" % (alt, az))
+    global location
+    newAltAz = SkyCoord(alt = alt * u.deg, az = az * u.deg, obstime = dt.utcnow(), frame = 'altaz', location = location)
+    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (newAltAz.transform_to('icrs').ra.radian, newAltAz.transform_to('icrs').dec.radian))
+    return newAltAz.transform_to('icrs').ra.radian, newAltAz.transform_to('icrs').dec.radian
 
 def equatorial_to_alt_az(ra, dec, gst=None):
-    global local_site #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
-    lat = local_site.latitude.r
-    #Calculate these once only for speed
-    sin_lat = sin(lat)
-    cos_lat = cos(lat)
-    sin_dec = sin(dec)
-    cos_dec = cos(dec)
-    h = gst - local_site.longitude.r - ra
-    sin_h = sin(h)
-    cos_h = cos(h)
-    alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
-    az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
-    return alt, az % (2*pi)
-#This test implicitly assumes time between two calculations not significant:
-_check_close((1.84096, 0.3984), alt_az_to_equatorial(*equatorial_to_alt_az(1.84096, 0.3984)))
-#_check_close(parse_hhmm("07:01:55"), 1.84096) # RA
-#_check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
-
-#This ensures identical time stamp used:
-gst = greenwich_sidereal_time_in_radians()
-for ra in [0.1, 1, 2, 3, pi, 4, 5, 6, 1.99*pi]:
-    for dec in [-0.49*pi, -1.1, -1, 0, 0.001, 1.55, 0.49*pi]:
-        alt, az = equatorial_to_alt_az(ra, dec, gst)
-        _check_close((ra, dec), alt_az_to_equatorial(alt, az, gst))
-del gst, ra, dec
+    debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
+    global location
+    skyobject = SkyCoord.from_name('M41')
+    skyobjectaltaz = skyobject.transform_to(AltAz(obstime=dt.utcnow(),location=location))
+    az = skyobjectaltaz.az.to_string()
+    alt = skyobjectaltaz.alt.to_string()
+    debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (az.rpartition('d')[0], alt.rpartition('d')[0]))
+    return az.rpartition('d')[0], alt.rpartition('d')[0]
 
 # ====================
 # Meade LX200 Protocol
@@ -255,14 +189,16 @@ def meade_lx200_cmd_CM_sync():
     LX200's - a "#" terminated string with the name of the object that was synced.
     Autostars & LX200GPS - At static string: "M31 EX GAL MAG 3.5 SZ178.0'#"
     """
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync")
     #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
     global offset_alt, offset_az
     global local_alt, local_az, target_alt, target_dec
-    sys.stderr.write("Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
-    sys.stderr.write("New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
                      (radians_to_hhmmss(target_ra), target_ra, radians_to_sddmmss(target_dec), target_dec))
     target_alt, target_az = equatorial_to_alt_az(target_ra, target_dec)
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - target_alt, target az: %s, %s" % (target_alt, target_az))
     offset_alt += (target_alt - local_alt)
     offset_az += (target_az - local_az)
     offset_alt %= 2*pi
@@ -271,7 +207,7 @@ def meade_lx200_cmd_CM_sync():
     config.set("offsets", "azimuth", offset_az)
     save_config()
     update_alt_az()
-    sys.stderr.write("Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - Revised current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
     return "M31 EX GAL MAG 3.5 SZ178.0'"
 
@@ -283,6 +219,7 @@ def meade_lx200_cmd_MS_move_to_target():
     1<string># - Object Below Horizon w/string message
     2<string># - Object Below Higher w/string message
     """
+    debug_info("FUNCTION meade_lx200_cmd_MS_move_to_target")
     #SkySafari's "goto" command sends this after a pair of :Sr# and :Sd# commands.
     #For return code 1 and 2 the error message is not shown, simply that the
     #target is below the horizon (1) or out of reach of the mount (2).
@@ -294,6 +231,7 @@ def meade_lx200_cmd_MS_move_to_target():
 
 def parse_hhmm(value):
     """Turn string HH:MM.T or HH:MM:SS into radians."""
+    debug_info("FUNCTION parse_hhmm")
     parts = value.split(":")
     if len(parts) == 2:
         h = int(parts[0])
@@ -311,6 +249,7 @@ _check_close(parse_hhmm("12:00:00"), pi)
 
 def parse_sddmm(value):
     """Turn string sDD*MM or sDD*MM:SS into radians."""
+    debug_info("FUNCTION parse_sddmm")
     if value[3] != "*":
         if len(value) == 9 and value[3] == chr(223) and value[6] == ":":
             # Stellarium's variant in v0.12.4, since fixed:
@@ -344,6 +283,7 @@ _check_close(parse_hhmm("07:01:55"), 1.84096) # RA
 _check_close(parse_sddmm("+22*49:43"), 0.3984) # Dec
 
 def radians_to_hms(angle):
+    debug_info("FUNCTION radians_to_hms")
     fraction, hours = modf(angle * 12 / pi)
     fraction, minutes = modf(fraction * 60)
     return hours, minutes, fraction * 60
@@ -351,6 +291,7 @@ _check_close(radians_to_hms(0.01), (0, 2, 17.50987083139755))
 _check_close(radians_to_hms(6.28), (23.0, 59.0, 16.198882117679716))
 
 def radians_to_hhmmss(angle):
+    debug_info("FUNCTION radians_to_hhmmss")
     while angle < 0.0:
         sys.stderr.write("Warning, radians_to_hhmmss called with %0.2f\n" % angle)
         angle += 2*pi
@@ -358,6 +299,7 @@ def radians_to_hhmmss(angle):
     return "%02i:%02i:%02i#" % (h, m, round(s))
 
 def radians_to_hhmmt(angle):
+    debug_info("FUNCTION radians_to_hhmmt")
     while angle < 0.0:
         sys.stderr.write("Warning, radians_to_hhmmt called with %0.2f\n" % angle)
         angle += 2*pi
@@ -366,30 +308,42 @@ def radians_to_hhmmt(angle):
 
 def radians_to_sddmm(angle):
     """Signed degrees, arc-minutes as sDD*MM# for protocol."""
+    debug_info("FUNCTION radians_to_sddmm")
     if angle < 0.0:
         sign = "-"
         angle = abs(angle)
     else:
         sign = "+"
-    fraction, degrees = modf(angle * 180 / pi)
+    fraction, degrees = modf(angle / pi)
     return "%s%02i*%02i#" % (sign, degrees, round(fraction * 60.0))
 
 def radians_to_sddmmss(angle):
-    """Signed degrees, arc-minutes, arc-seconds as sDD*MM:SS# for protocol."""
+    """
+    Signed degrees, arc-minutes, arc-seconds as sDD*MM:SS# for protocol.
+    FUNCTION radians_to_sddmmss
+    angle: 95.71562968082463
+    fraction: 0.03387138278878865
+    degress: 30.0
+    return: -30*28:02#
+    """
+    debug_info("FUNCTION radians_to_sddmmss - passed values: %s" % angle)
     if angle < 0.0:
         sign = "-"
         angle = abs(angle)
     else:
         sign = "+"
-    fraction, degrees = modf(angle * 180 / pi)
+    fraction, degrees = modf(angle / pi)
     fraction, arcminutes = modf(fraction * 60.0)
+    debug_info("FUNCTION radians_to_sddmmss - actual values: angle = %s, fraction = %s, degrees = %s, arcminutes = %s\n" % (angle, fraction, degrees, arcminutes))
+    debug_info("FUNCTION radians_to_sddmmss - return values: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
-
+'''
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
     _check_close(parse_sddmm(radians_to_sddmm(r).rstrip("#")), r, 0.0002)
     _check_close(parse_sddmm(radians_to_sddmmss(r).rstrip("#")), r)
+'''
 for r in [0, 0.01, 0.1, pi, 2*pi]:
     #Testing dec from 0 to 2*pi
     assert 0 <= r <= 2*pi, r
@@ -404,6 +358,7 @@ def meade_lx200_cmd_GR_get_ra():
     Depending which precision is set for the telescope
     """
     #TODO - Since :GR# and :GD# commands normally in pairs, cache this?
+    debug_info("FUNCTION meade_lx200_cmd_GR_get_ra")
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if high_precision:
@@ -419,9 +374,11 @@ def meade_lx200_cmd_GD_get_dec():
     Returns: sDD*MM# or sDD*MM'SS#
     Depending upon the current precision setting for the telescope.
     """
+    debug_info("FUNCTION meade_lx200_cmd_GD_get_dec")
     update_alt_az()
     ra, dec = alt_az_to_equatorial(local_alt, local_az)
     if debug:
+        sys.stdout.write("\nFUNCTION meade_lx200_cmd_GD_get_dec\n")
         sys.stderr.write("RA %s (%0.5f radians), dec %s (%0.5f radians)\n"
                          % (radians_to_hhmmss(ra), ra, radians_to_sddmmss(dec), dec))
     if high_precision:
@@ -438,6 +395,7 @@ def meade_lx200_cmd_Sr_set_target_ra(value):
     Stellarium breaks the specification and sends things like ':Sr 20:39:38#'
     with an extra space.
     """
+    debug_info("FUNCTION meade_lx200_cmd_Sr_set_target_ra - passed values: %s" % value)
     global target_ra
     try:
         target_ra = parse_hhmm(value.strip()) # Remove any space added by Stellarium
@@ -459,6 +417,7 @@ def meade_lx200_cmd_Sd_set_target_de(value):
     with an extra space, and the wrong characters. Apparently chr(223) is the
     degrees symbol on some character sets.
     """
+    debug_info("FUNCTION meade_lx200_cmd_Sd_set_target_de - passed values: %s" % value)
     global target_dec
     try:
         target_dec = parse_sddmm(value.strip()) # Remove any space added by Stellarium
@@ -478,6 +437,7 @@ def meade_lx200_cmd_U_precision_toggle():
 
     Returns Nothing
     """
+    debug_info("FUNCTION meade_lx200_cmd_U_precision_toggle")
     global high_precision
     high_precision = not high_precision
     if high_precision:
@@ -491,11 +451,12 @@ def meade_lx200_cmd_St_set_latitude(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
+    debug_info("FUNCTION meade_lx200_cmd_St_set_latitude - passed value: %s" % value )
     #Expect this to be followed by an Sg command to set the longitude...
-    global local_site, config
+    global config, site_latitude
     try:
         value = value.replace("*", "d")
-        local_site.latitude = coords.AngularCoordinate(value)
+        site_latitude = value
         #That worked, should be safe to save the value to disk later...
         config.set("site", "latitude", value)
         return "1"
@@ -508,14 +469,14 @@ def meade_lx200_cmd_Sg_set_longitude(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
+    debug_info("FUNCTION meade_lx200_cmd_Sg_set_longitude - passed value: %s" % value )
     #Expected immediately after the set latitude command
     #e.g. :St+56*29# then :Sg003*08'#
-    global local_site, config
+    global config, site_latitude, site_longitude
     try:
         value = value.replace("*", "d")
-        local_site.longitude = coords.AngularCoordinate(value)
-        sys.stderr.write("Local site now latitude %0.3fd, longitude %0.3fd\n"
-                         % (local_site.latitude.d, local_site.longitude.d))
+        site_longitude = value
+        sys.stderr.write("Local site now latitude %s, longitude %s\n" % (site_latitude, site_longitude))
         #That worked, should be safe to save the value to disk:
         config.set("site", "longitude", value)
         save_config()
@@ -531,10 +492,11 @@ def meade_lx200_cmd_SG_set_local_timezone(value):
     """
     #Expected immediately after the set latitude and longitude commands
     #Seems the decimal is optional, e.g. :SG-00#
-    global local_site
+    debug_info("FUNCTION meade_lx200_cmd_SG_set_local_timezone - passed values: site_tz = %s" % value )
+    global site_tz
     try:
-        local_site.tz = float(value) # Can in theory be partial hour, so not int
-        sys.stderr.write("Local site timezone now %s\n" % local_site.tz)
+        site_tz = float(value) # Can in theory be partial hour, so not int
+        sys.stderr.write("Local site timezone now %s\n" % site_tz)
         return "1"
     except Exception as err:
         sys.stderr.write("Error with :SG%s# time zone: %s\n" % (value, err))
@@ -545,7 +507,8 @@ def meade_lx200_cmd_SL_set_local_time(value):
 
     Returns: 0 - Invalid, 1 - Valid
     """
-    global local_time_offset
+    debug_info("FUNCTION meade_lx200_cmd_SL_set_local_time - passed values: %s" % value )
+    global local_time_offset, site_tz
     local = time.time() + local_time_offset
     #e.g. :SL00:10:48#
     #Expect to be followed by an SC command to set the date.
@@ -557,13 +520,13 @@ def meade_lx200_cmd_SL_set_local_time(value):
             raise ValueError("Bad minutes")
         if not (0 <= ss <= 59):
             raise ValueError("Bad seconds")
-        desired_seconds_since_midnight = 60*60*(hh + local_site.tz) + 60*mm + ss
+        desired_seconds_since_midnight = 60*60*(hh + site_tz) + 60*mm + ss
         t = time.gmtime(local)
         current_seconds_since_midnight = 60*60*t.tm_hour + 60*t.tm_min + t.tm_sec
         new_offset = desired_seconds_since_midnight - current_seconds_since_midnight
         local_time_offset += new_offset
         sys.stderr.write("Requested site time %i:%02i:%02i (TZ %s), new offset %is, total offset %is\n"
-                         % (hh, mm, ss, local_site.tz, new_offset, local_time_offset))
+                         % (hh, mm, ss, site_tz, new_offset, local_time_offset))
         debug_time()
         return "1"
     except ValueError as err:
@@ -581,6 +544,7 @@ def meade_lx200_cmd_SC_set_local_date(value):
 
     Note: For LX200GPS/RCX400/Autostar II this is the UTC data!
     """
+    debug_info("FUNCTION meade_lx200_cmd_SC_set_local_date - passed values: %s" % value )
     #Expected immediately after an SL command setting the time.
     #
     #Exact list of values from http://www.dv-fansler.com/FTP%20Files/Astronomy/LX200%20Hand%20Controller%20Communications.pdf
@@ -617,76 +581,12 @@ def return_none(value=None):
     """Dummy command implementation returning nothing."""
     return None
 
-# TODO - Can SkySafari show focus control buttons?
-# Would be very cool to connect my motorised focuser to this...
-#
 # :F+# move in - returns nothing
 # :F-# move out - returns nothing
 # :FQ# halt Focuser Motion - returns: nothing
 # :FF# Set Focus speed to fastest - Returns: Nothing
 # :FS# Set Focus speed to slowest - Returns: Nothing
 # :F<n># set focuser speed to <n> where <n> is 1..4 - Returns: Nothing
-
-# ==========================
-# Celestron NexStar Protocol
-# ==========================
-
-def nexstar_cmd_V_version():
-    """NexStar command V, version query, returns v1.2"""
-    return chr(1) + chr(2) + "#"
-
-def nexstar_cmd_E_get_ra_dec():
-    """Nexstar command E, get RA/Dec.
-
-    Returns integers in hex, fraction of 65536.
-    """
-    update_alt_az()
-    ra, dec = alt_az_to_equatorial(local_alt, local_az)
-    #Convert from radians to fraction of 65536
-    ra = int((65536*ra) / (2*pi))
-    dec = int((65536*dec) / (2*pi))
-    return "%04X,%04X#" % (ra, dec)
-
-def nexstar_cmd_e_get_ra_dec_precise():
-    """Nexstar command e, get precise RA/Dec.
-
-    Returns integers in hex, fraction of 4294967296.
-    """
-    update_alt_az()
-    ra, dec = alt_az_to_equatorial(local_alt, local_az)
-    #Convert from radians to fraction of 4294967296
-    ra = int((4294967296*ra) / (2*pi))
-    dec = int((4294967296*dec) / (2*pi))
-    return "%08X,%08X#"% (ra, dec)
-
-def nexstar_cmd_R_goto_ra_dec(value):
-    """Nexstar command R, goto RA/Dec
-
-    e.g R34AB,12CE
-    """
-    global target_ra, target_dec
-    target_ra, target_dec = (int(v,16)*2*pi/65536 for v in value.split(","))
-    return "#"
-
-def nexstar_cmd_r_goto_ra_dec_precise(value):
-    """Nexstar command r, goto RA/Dec
-
-    e.g. r34AB0500,12CE0500
-    """
-    global target_ra, target_dec
-    target_ra, target_dec = (int(v,16)*2*pi/4294967296 for v in value.split(","))
-    return "#"
-
-def nexstar_cmd_M_cancel_goto():
-    """Nextstar command M, cancel goto (stop moving)"""
-    return "#"
-
-def nexstar_cmd_P_passthrough(value):
-    """Nexstar command P, pass-though to motor, GPS, etc.
-
-    Used for the slew commands (which we don't support).
-    """
-    return "ERROR#"
 
 # ================
 # Main Server Code
@@ -720,58 +620,49 @@ command_map = {
     ":SL": meade_lx200_cmd_SL_set_local_time,
     ":SC": meade_lx200_cmd_SC_set_local_date,
     ":U":  meade_lx200_cmd_U_precision_toggle,
-    #Celestron NexStar Communication Protocol
-    "V": nexstar_cmd_V_version,
-    "E": nexstar_cmd_E_get_ra_dec,
-    "e": nexstar_cmd_e_get_ra_dec_precise,
-    "R": nexstar_cmd_R_goto_ra_dec,
-    "r": nexstar_cmd_r_goto_ra_dec_precise,
-    "M": nexstar_cmd_M_cancel_goto,
-    "P": nexstar_cmd_P_passthrough,
 }
+
+#Set local site (AltAz)
+obs = obs_time()
+location = EarthLocation.of_address(site_address)
+debug_info("Location %r" % location)
+
+#c = SkyCoord(ra=site_latitude*u.degree, dec=site_longitude*u.degree, frame='icrs')
+#local_site = c.transform_to(AltAz(obstime = obs, location = loc))
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (server_name, server_port)
-sys.stderr.write("Starting up on %s port %s\n" % server_address)
+sys.stderr.write("\nStarting up on %s port %s\n" % server_address)
 sock.bind(server_address)
-sock.listen(1)
+sock.listen(5)
 
 while True:
-    # SkySafari v4.0.1 continously opens and closed the connection,
-    # while Stellarium via socat opens it and keeps it open using:
-    # $ ./socat GOPEN:/dev/ptyp0,ignoreeof TCP:raspberrypi8:4030
-    # (probably socat which is maintaining the link)
-    #sys.stdout.write("waiting for a connection\n")
+    sys.stdout.write("Waiting for a connection\n")
     connection, client_address = sock.accept()
     data = ""
     try:
-        #sys.stdout.write("Client connected: %s, %s\n" % client_address)
+        sys.stdout.write("Client connected: %s, %s\n" % client_address)
         while True:
-            data += connection.recv(16)
+            data_received = connection.recv(16)
+            data = data_received.decode()
             if not data:
                 imu.update()
                 break
-            if debug:
-                sys.stdout.write("Processing %r\n" % data)
             #For stacked commands like ":RS#:GD#",
-            #but also lone NexStar ones like "e"
+            debug_info("Processing %r" % data)
             while data:
                 while data[0:1] == "#":
-                    #Stellarium seems to send '#:GR#' and '#:GD#'
-                    #(perhaps to explicitly close and prior command?)
-                    #sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
+                    sys.stderr.write("Problem in data: %r - dropping leading #\n" % data)
                     data = data[1:]
                 if not data:
                     break
                 if "#" in data:
                     raw_cmd = data[:data.index("#")]
-                    #sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
+                    sys.stderr.write("%r --> %r as command\n" % (data, raw_cmd))
                     data = data[len(raw_cmd)+1:]
                     cmd, value = raw_cmd[:3], raw_cmd[3:]
                 else:
-                    #This will break on complex NexStar commands,
-                    #but don't care - Meade LX200 is the prority.
                     raw_cmd = data
                     cmd = raw_cmd[:3]
                     value = raw_cmd[3:]
@@ -780,18 +671,15 @@ while True:
                     sys.stderr.write("Eh? No command?\n")
                 elif cmd in command_map:
                     if value:
-                        if debug:
-                            sys.stdout.write("Command %r, argument %r\n" % (cmd, value))
+                        debug_info("Command %r, argument %r" % (cmd, value))
                         resp = command_map[cmd](value)
                     else:
                         resp = command_map[cmd]()
                     if resp:
-                        if debug:
-                            sys.stdout.write("Command %r, sending %r\n" % (cmd, resp))
-                        connection.sendall(resp)
+                        debug_info("Command %r, sending %r" % (cmd, resp))
+                        connection.sendall(resp.encode())
                     else:
-                        if debug:
-                            sys.stdout.write("Command %r, no response\n" % cmd)
+                        debug_info("Command %r, no response" % cmd)
                 else:
                     sys.stderr.write("Unknown command %r, from %r (data %r)\n" % (cmd, raw_cmd, data))
     finally:

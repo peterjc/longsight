@@ -1,0 +1,236 @@
+Checking Configuration
+Connecting to sensors...
+Connected to MPU9250 sensor
+Opening network port...
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_hhmm
+FUNCTION parse_sddmm
+FUNCTION parse_sddmm
+FUNCTION parse_sddmm
+FUNCTION parse_sddmm
+FUNCTION parse_hhmm
+FUNCTION parse_sddmm
+FUNCTION radians_to_hms
+FUNCTION radians_to_hms
+FUNCTION obs_time
+Location <EarthLocation (3921431.60482752, 575374.18961213, 4980439.59675698) m>
+
+Starting up on 192.168.86.42 port 4030
+Processing ':St+51*40#'
+Command ':St', argument '+51*40'
+FUNCTION meade_lx200_cmd_St_set_latitude - passed value: +51*40
+Command ':St', sending '1'
+Processing ':Sg351*40#'
+Command ':Sg', argument '351*40'
+FUNCTION meade_lx200_cmd_Sg_set_longitude - passed value: 351*40
+Local site now latitude +51d40, longitude 351d40
+Command ':Sg', sending '1'
+Processing ':SG-01.0#'
+Command ':SG', argument '-01.0'
+FUNCTION meade_lx200_cmd_SG_set_local_timezone - passed values: site_tz = -01.0
+Local site timezone now -1.0
+Command ':SG', sending '1'
+Processing ':SG-01.0#'
+Command ':SG', argument '-01.0'
+FUNCTION meade_lx200_cmd_SG_set_local_timezone - passed values: site_tz = -01.0
+Local site timezone now -1.0
+Command ':SG', sending '1'
+Processing ':SL23:32:56#'
+Command ':SL', argument '23:32:56'
+FUNCTION meade_lx200_cmd_SL_set_local_time - passed values: 23:32:56
+Requested site time 23:32:56 (TZ -1.0), new offset -1s, total offset -1s
+FUNCTION debug_time - site_tz -1.0
+FUNCTION site_time_local_as_datetime - site_tz -1.0
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+Effective site date/time is 2022-01-28 00:32:56.019326 (local time), 2022-01-27 23:32:56.020744 (GMT/UTC)
+Command ':SL', sending '1'
+Processing ':SC01/27/22#'
+Command ':SC', argument '01/27/22'
+FUNCTION meade_lx200_cmd_SC_set_local_date - passed values: 01/27/22
+Requested site date 01/27/22 (MM/DD/YY) gives offset of 0 days
+FUNCTION debug_time - site_tz -1.0
+FUNCTION site_time_local_as_datetime - site_tz -1.0
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+FUNCTION site_time_gmt_as_datetime
+FUNCTION site_time_gmt_as_epoch
+Effective site date/time is 2022-01-28 00:32:56.072903 (local time), 2022-01-27 23:32:56.074310 (GMT/UTC)
+Command ':SC', sending '1Updating Planetary Data#                              #'
+Processing ':GR#'
+FUNCTION meade_lx200_cmd_GR_get_ra
+FUNCTION update_alt_az - local_alt 1.313276800826052 - local_aaz 2.176034165243983
+FUNCTION alt_az_to_equatorial - passed values: alt 1.313276800826052 - az 2.176034165243983
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.03142252] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: 0.732559926031784
+FUNCTION alt_az_to_equatorial - gst: 2.102621500125476
+FUNCTION alt_az_to_equatorial - hours_in_rad: 5.997607960487637
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: 0.732559926031784
+FUNCTION alt_az_to_equatorial - actual values: ra 2.5336429511502843 - dec 0.732559926031784
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+Command ':GR', sending '09:40:40#'
+Processing ':RS#:GD#'
+Command ':RS', no response
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION update_alt_az - local_alt 5.106510827845283 - local_aaz 5.614902444254167
+FUNCTION alt_az_to_equatorial - passed values: alt 5.106510827845283 - az 5.614902444254167
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.03856433] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.567417066838458
+FUNCTION alt_az_to_equatorial - gst: 2.104491221117832
+FUNCTION alt_az_to_equatorial - hours_in_rad: 2.8555519854513913
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.567417066838458
+FUNCTION alt_az_to_equatorial - actual values: ra 5.677568647178887 - dec -0.567417066838458
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+FUNCTION radians_to_sddmmss - passed values: -0.567417066838458
+FUNCTION radians_to_sddmmss - actual values: angle = 0.567417066838458, fraction = 0.8368677178453954, degrees = 0.0, arcminutes = 10.0
+
+FUNCTION radians_to_sddmmss - return values: -00*10:50#
+
+RA 21:41:12# (5.67757 radians), dec -00*10:50# (-0.56742 radians)
+FUNCTION radians_to_sddmmss - passed values: -0.567417066838458
+FUNCTION radians_to_sddmmss - actual values: angle = 0.567417066838458, fraction = 0.8368677178453954, degrees = 0.0, arcminutes = 10.0
+
+FUNCTION radians_to_sddmmss - return values: -00*10:50#
+
+Command ':GD', sending '-00*10:50#'
+Processing ':Q#'
+Command ':Q', no response
+Processing ':RS#'
+Command ':RS', no response
+Processing ':St+51*40#'
+Command ':St', argument '+51*40'
+FUNCTION meade_lx200_cmd_St_set_latitude - passed value: +51*40
+Command ':St', sending '1'
+Processing ':GR#'
+FUNCTION meade_lx200_cmd_GR_get_ra
+FUNCTION update_alt_az - local_alt 5.4154637956892575 - local_aaz 0.1721633412113443
+FUNCTION alt_az_to_equatorial - passed values: alt 5.4154637956892575 - az 0.1721633412113443
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.03862641] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: -0.20486930124571734
+FUNCTION alt_az_to_equatorial - gst: 2.104507473422555
+FUNCTION alt_az_to_equatorial - hours_in_rad: 3.2549671825939575
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: -0.20486930124571734
+FUNCTION alt_az_to_equatorial - actual values: ra 5.278169702341043 - dec -0.20486930124571734
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+Command ':GR', sending '20:09:40#'
+Processing ':RS#:GD#'
+Command ':RS', no response
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION update_alt_az - local_alt 5.771216213980958 - local_aaz 0.3541670929035306
+FUNCTION alt_az_to_equatorial - passed values: alt 5.771216213980958 - az 0.3541670929035306
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.03867498] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: 0.1230475126348478
+FUNCTION alt_az_to_equatorial - gst: 2.1045201889778338
+FUNCTION alt_az_to_equatorial - hours_in_rad: 3.451158644712569
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: 0.1230475126348478
+FUNCTION alt_az_to_equatorial - actual values: ra 5.0819909557777105 - dec 0.1230475126348478
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+FUNCTION radians_to_sddmmss - passed values: 0.1230475126348478
+FUNCTION radians_to_sddmmss - actual values: angle = 0.1230475126348478, fraction = 0.35003438451981683, degrees = 0.0, arcminutes = 2.0
+
+FUNCTION radians_to_sddmmss - return values: +00*02:21#
+
+RA 19:24:42# (5.08199 radians), dec +00*02:21# (0.12305 radians)
+FUNCTION radians_to_sddmmss - passed values: 0.1230475126348478
+FUNCTION radians_to_sddmmss - actual values: angle = 0.1230475126348478, fraction = 0.35003438451981683, degrees = 0.0, arcminutes = 2.0
+
+FUNCTION radians_to_sddmmss - return values: +00*02:21#
+
+Command ':GD', sending '+00*02:21#'
+Processing ':GR#'
+FUNCTION meade_lx200_cmd_GR_get_ra
+FUNCTION update_alt_az - local_alt 6.134166612370002 - local_aaz 0.5104310107233799
+FUNCTION alt_az_to_equatorial - passed values: alt 6.134166612370002 - az 0.5104310107233799
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.03872471] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: 0.4319147468538843
+FUNCTION alt_az_to_equatorial - gst: 2.1045332077393195
+FUNCTION alt_az_to_equatorial - hours_in_rad: 3.702546434271568
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: 0.4319147468538843
+FUNCTION alt_az_to_equatorial - actual values: ra 4.830616184980197 - dec 0.4319147468538843
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+Command ':GR', sending '18:27:06#'
+Processing ':RS#'
+Command ':RS', no response
+Processing ':GD#'
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION update_alt_az - local_alt 1.1297169252286379 - local_aaz 3.2386534488011933
+FUNCTION alt_az_to_equatorial - passed values: alt 1.1297169252286379 - az 3.2386534488011933
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.03974607] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: 0.4622060344949627
+FUNCTION alt_az_to_equatorial - gst: 2.104800598714319
+FUNCTION alt_az_to_equatorial - hours_in_rad: 0.04623823685945453
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: 0.4622060344949627
+FUNCTION alt_az_to_equatorial - actual values: ra 2.2040064661877246 - dec 0.4622060344949627
+
+FUNCTION meade_lx200_cmd_GD_get_dec
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+FUNCTION radians_to_sddmmss - passed values: 0.4622060344949627
+FUNCTION radians_to_sddmmss - actual values: angle = 0.4622060344949627, fraction = 0.8274850140131687, degrees = 0.0, arcminutes = 8.0
+
+FUNCTION radians_to_sddmmss - return values: +00*08:50#
+
+RA 08:25:07# (2.20401 radians), dec +00*08:50# (0.46221 radians)
+FUNCTION radians_to_sddmmss - passed values: 0.4622060344949627
+FUNCTION radians_to_sddmmss - actual values: angle = 0.4622060344949627, fraction = 0.8274850140131687, degrees = 0.0, arcminutes = 8.0
+
+FUNCTION radians_to_sddmmss - return values: +00*08:50#
+
+Command ':GD', sending '+00*07:58#'
+Processing ':GR#'
+FUNCTION meade_lx200_cmd_GR_get_ra
+FUNCTION update_alt_az - local_alt 0.8022747940176379 - local_aaz 1.4048704672402863
+FUNCTION alt_az_to_equatorial - passed values: alt 0.8022747940176379 - az 1.4048704672402863
+FUNCTION greenwich_sidereal_time_in_radians - value <Longitude [8.04702611] hourangle>
+FUNCTION alt_az_to_equatorial - deterime ra from latitude: 0.9018937841346785
+FUNCTION alt_az_to_equatorial - DEC from latitude: 0.6882692240444466
+FUNCTION alt_az_to_equatorial - gst: 2.1067065101894116
+FUNCTION alt_az_to_equatorial - hours_in_rad: 5.191099413285302
+FUNCTION alt_az_to_equatorial - site_longitude: 351d40
+FUNCTION alt_az_to_equatorial - lon: 6.137741202846726
+FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad
+FUNCTION alt_az_to_equatorial - RA from longitude: 0.6882692240444466
+FUNCTION alt_az_to_equatorial - actual values: ra 3.3442365084165555 - dec 0.6882692240444466
+FUNCTION radians_to_hhmmss
+FUNCTION radians_to_hms
+Command ':GR', sending '12:46:27#'
+Processing ':Q#'
+Command ':Q', no response
