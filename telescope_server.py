@@ -168,41 +168,6 @@ def alt_az_to_equatorial(alt, az, gst=None):
     debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (newAltAz.transform_to('icrs').ra.radian, newAltAz.transform_to('icrs').dec.radian))
     return newAltAz.transform_to('icrs').ra.radian, newAltAz.transform_to('icrs').dec.radian
 
-'''
-    global site_longitude, site_latitude, location #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
-    
-    lat = Angle(site_latitude, u.radian)
-    debug_info("FUNCTION alt_az_to_equatorial - deterime ra from latitude: %s" % lat.radian)
-    #Calculate these once only for speed
-    sin_lat = sin(lat.radian)
-    cos_lat = cos(lat.radian)
-    sin_alt = sin(alt)
-    cos_alt = cos(alt)
-    sin_az = sin(az)
-    cos_az = cos(az)
-    # DEC based on latitude in radians
-    dec  = asin(sin_alt*sin_lat + cos_alt*cos_lat*cos_az)
-
-    debug_info("FUNCTION alt_az_to_equatorial - DEC from latitude: %s" % dec)
-    hours_in_rad = acos((sin_alt - sin_lat*sin(dec)) / (cos_lat*cos(dec)))
-    if sin_az > 0.0:
-        hours_in_rad = 2*pi - hours_in_rad
-
-    # Now figure out RA based on Longitude in Radians
-    debug_info("FUNCTION alt_az_to_equatorial - gst: %s" % gst)
-    debug_info("FUNCTION alt_az_to_equatorial - hours_in_rad: %s" % hours_in_rad)
-    debug_info("FUNCTION alt_az_to_equatorial - site_longitude: %s" % site_longitude)
-    lon = Angle(site_longitude, u.radian)
-    debug_info("FUNCTION alt_az_to_equatorial - lon: %s" % lon.radian)
-    debug_info("FUNCTION alt_az_to_equatorial - Forumula: ra = gst - lon.radian - hours_in_rad")
-    ra = gst - lon.radian - hours_in_rad
-    debug_info("FUNCTION alt_az_to_equatorial - RA from longitude: %s" % dec)
-    debug_info("FUNCTION alt_az_to_equatorial - actual values: ra %r - dec %r" % (ra % (pi*2), dec))
-    return ra % (pi*2), dec
-'''
-
 def equatorial_to_alt_az(ra, dec, gst=None):
     debug_info("FUNCTION equatorial_to_alt_az - passed values: ra %r - dec %r" % (ra, dec))
     global location
@@ -212,27 +177,6 @@ def equatorial_to_alt_az(ra, dec, gst=None):
     alt = skyobjectaltaz.alt.to_string()
     debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (az.rpartition('d')[0], alt.rpartition('d')[0]))
     return az.rpartition('d')[0], alt.rpartition('d')[0]
-
-'''
-    global site_longitude, site_latitude, location #and time offset used too
-    if gst is None:
-        gst = greenwich_sidereal_time_in_radians()
-
-    lat = Angle(location.geodetic.lat, u.radian)
-    lon = Angle(site_longitude, u.radian)
-    #Calculate these once only for speed
-    sin_lat = sin(lat.radian)
-    cos_lat = cos(lat.radian)
-    sin_dec = sin(dec)
-    cos_dec = cos(dec)
-    h = gst - (lon.radian * pi / 180) - ra
-    sin_h = sin(h)
-    cos_h = cos(h)
-    alt = asin(sin_lat*sin_dec + cos_lat*cos_dec*cos_h)
-    az = atan2(-cos_dec*sin_h, cos_lat*sin_dec - sin_lat*cos_dec*cos_h)
-    debug_info("FUNCTION equatorial_to_alt_az - returned values: alt %r - az %r" % (alt, az % (2*pi)))
-    return alt, az % (2*pi)
-'''
 
 # ====================
 # Meade LX200 Protocol
@@ -393,13 +337,13 @@ def radians_to_sddmmss(angle):
     debug_info("FUNCTION radians_to_sddmmss - actual values: angle = %s, fraction = %s, degrees = %s, arcminutes = %s\n" % (angle, fraction, degrees, arcminutes))
     debug_info("FUNCTION radians_to_sddmmss - return values: %s\n" % "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0)))
     return "%s%02i*%02i:%02i#" % (sign, degrees, arcminutes, round(fraction * 60.0))
-'''
+
 for r in [0.000290888208666, 1, -0.49*pi, -1.55, 0, 0.01, 0.1, 0.5*pi]:
     #Testing RA from -pi/2 to pi/2
     assert -0.5*pi <= r <= 0.5*pi, r
     _check_close(parse_sddmm(radians_to_sddmm(r).rstrip("#")), r, 0.0002)
     _check_close(parse_sddmm(radians_to_sddmmss(r).rstrip("#")), r)
-'''
+
 for r in [0, 0.01, 0.1, pi, 2*pi]:
     #Testing dec from 0 to 2*pi
     assert 0 <= r <= 2*pi, r
