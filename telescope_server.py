@@ -249,11 +249,12 @@ def meade_lx200_cmd_CM_sync():
     #SkySafari's "align" command sends this after a pair of :Sr# and :Sd# commands.
     global offset_alt, offset_az
     global local_alt, local_az, target_alt, target_dec
-    sys.stderr.write("Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - Resetting from current position Alt %s (%0.5f radians), Az %s (%0.5f radians)\n" %
                      (radians_to_sddmmss(local_alt), local_alt, radians_to_hhmmss(local_az), local_az))
-    sys.stderr.write("New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - New target position RA %s (%0.5f radians), Dec %s (%0.5f radians)\n" %
                      (radians_to_hhmmss(target_ra), target_ra, radians_to_sddmmss(target_dec), target_dec))
     target_alt, target_az = equatorial_to_alt_az(target_ra, target_dec)
+    debug_info("FUNCTION meade_lx200_cmd_CM_sync - target_alt, target az: %s, %s" % (target_alt, target_az))
     offset_alt += (target_alt - local_alt)
     offset_az += (target_az - local_az)
     offset_alt %= 2*pi
